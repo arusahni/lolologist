@@ -17,6 +17,7 @@ try:
 except ImportError:
 	DEVNULL = open(os.devnull, 'wb')
 
+MAX_LINES = 3
 STROKE_COLOR = (0,0,0)
 TEXT_COLOR = (255, 255, 255)
 
@@ -51,7 +52,9 @@ class ImageMacro(object):
 	def __init__(self, image, top, bottom, font='impact.ttf'):
 		self.font = font
 		self.top_text = top
-		self.bottom_text = textwrap.fill(bottom, 84)
+		self.bottom_text = textwrap.wrap(bottom, 30)
+		if len(self.bottom_text) > MAX_LINES:
+			self.bottom_text[MAX_LINES - 1] = self.bottom_text[MAX_LINES - 1] + '\u2026'
 		self.image_path = image
 
 
@@ -64,13 +67,18 @@ class ImageMacro(object):
 		top_dimensions = self.__get_text_dimensions(self.top_text, top_font_size)
 		top_position = (self.size[0] - 5 - top_dimensions[0], 5)
 
-		bottom_dimensions = self.__get_text_dimensions(self.bottom_text, bottom_font_size)
-		bottom_position = (self.size[0]/2 - bottom_dimensions[0]/2,
-							self.size[1] - 5 - bottom_dimensions[1])
-
 		draw = ImageDraw.Draw(image)
 		self.__draw_image(draw, self.top_text, top_font_size, top_position)
-		self.__draw_image(draw, self.bottom_text, bottom_font_size, bottom_position)
+		
+		lines = min(len(self.bottom_text), MAX_LINES)
+		print(lines)
+		for row in range(lines):
+			bottom_offset = ((lines - 1 - row) * bottom_font_size) + 5
+			bottom_dimensions = self.__get_text_dimensions(self.bottom_text[row], bottom_font_size)
+			bottom_position = (self.size[0]/2 - bottom_dimensions[0]/2,
+								self.size[1] - bottom_offset - bottom_dimensions[1])
+
+			self.__draw_image(draw, self.bottom_text[row], bottom_font_size, bottom_position)
 		
 		image.save('macro.jpg')
 		return 'macro.jpg'
@@ -78,8 +86,8 @@ class ImageMacro(object):
 
 	def __draw_image(self, draw, text, font_size, position, stroke_width=3): #, bottom_font_size, bottom_dimensions, stroke_width=3):
 		font = ImageFont.truetype(self.font, font_size)
-		for x in range(-stroke_width, stroke_width):
-			for y in range(-stroke_width, stroke_width):
+		for x in range(-stroke_width, stroke_width + 1):
+			for y in range(-stroke_width, stroke_width + 1):
 				draw.text((position[0] + x, position[1] + y), text, STROKE_COLOR, font=font)
 		draw.text(position, text, TEXT_COLOR, font=font)
 
@@ -91,11 +99,9 @@ class ImageMacro(object):
 
 
 
-def get_picture(sha="xxxxxxxx", text="This is some really long text. Just how long will it get?"):
+def get_picture(sha="xxxxxxxx", text="This is some really long text. Just how long will it get? I have nooooo idea. Or do I? Who knows. Only The Shadow."):
 	camera = CameraSnapper()
 	with camera.capture_photo() as photo:
-		# image = Image.open(photo)
-		# image.save('photo.jpg')
 		macro = ImageMacro(photo, sha, text)
 		print(macro.render())
 
