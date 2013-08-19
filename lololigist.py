@@ -6,8 +6,8 @@
 
 from __future__ import unicode_literals, print_function
 
-import argparse, os
-from PIL import Image
+import argparse, os, textwrap
+from PIL import Image, ImageFont, ImageDraw
 from subprocess import call, STDOUT
 from contextlib import contextmanager
 from shutil import rmtree
@@ -16,6 +16,9 @@ try:
 	from subprocess import DEVNULL
 except ImportError:
 	DEVNULL = open(os.devnull, 'wb')
+
+STROKE_COLOR = (0,0,0)
+TEXT_COLOR = (255, 255, 255)
 
 class CameraSnapper(object):
 	''' A picture source '''
@@ -29,8 +32,8 @@ class CameraSnapper(object):
 	def capture_photo(self):
 		''' Captures a photo and provides it for further processing. '''
 		try:
-			call(['mplayer', '-vo', 'jpeg:outdir={}'.format(self.temp_directory),'-frames', 
-				str(self.frame_offset), 'tv://'], stdout=DEVNULL, stderr=STDOUT)
+			call(['mplayer', 'tv://', '-vo', 'jpeg:outdir={}'.format(self.temp_directory),'-frames', 
+				str(self.frame_offset)], stdout=DEVNULL, stderr=STDOUT)
 			yield os.path.join(self.temp_directory, '{0:08d}.jpg'.format(self.frame_offset))
 		finally:
 			if os.path.exists(self.temp_directory):
@@ -43,12 +46,58 @@ class GitCommit(object):
 		self.message = message
 
 
-def get_picture():
+class ImageMacro(object):
+	''' An image macro '''
+	def __init__(self, image, top, bottom, font='impact.ttf'):
+		self.font = font
+		self.top_text = top
+		self.bottom_text = textwrap.fill(bottom, 84)
+		self.image_path = image
+
+
+	def render(self, target_path=None):
+		image = Image.open(self.image_path)
+		self.size = image.size
+		top_font_size = 32
+		bottom_font_size = 48
+
+		top_dimensions = self.__get_text_dimensions(self.top_text, top_font_size)
+		top_position = (self.size[0] - 5 - top_dimensions[0], 5)
+
+		bottom_dimensions = self.__get_text_dimensions(self.bottom_text, bottom_font_size)
+		bottom_position = (self.size[0]/2 - bottom_dimensions[0]/2,
+							self.size[1] - 5 - bottom_dimensions[1])
+
+		draw = ImageDraw.Draw(image)
+		self.__draw_image(draw, self.top_text, top_font_size, top_position)
+		self.__draw_image(draw, self.bottom_text, bottom_font_size, bottom_position)
+		
+		image.save('macro.jpg')
+		return 'macro.jpg'
+
+
+	def __draw_image(self, draw, text, font_size, position, stroke_width=3): #, bottom_font_size, bottom_dimensions, stroke_width=3):
+		font = ImageFont.truetype(self.font, font_size)
+		for x in range(-stroke_width, stroke_width):
+			for y in range(-stroke_width, stroke_width):
+				draw.text((position[0] + x, position[1] + y), text, STROKE_COLOR, font=font)
+		draw.text(position, text, TEXT_COLOR, font=font)
+
+
+
+	def __get_text_dimensions(self, text, font_size):
+		font = ImageFont.truetype(self.font, font_size)
+		return font.getsize(text)
+
+
+
+def get_picture(sha="xxxxxxxx", text="This is some really long text. Just how long will it get?"):
 	camera = CameraSnapper()
 	with camera.capture_photo() as photo:
-		image = Image.open(photo)
-		image.save('photo.jpg')
-		print(photo)
+		# image = Image.open(photo)
+		# image.save('photo.jpg')
+		macro = ImageMacro(photo, sha, text)
+		print(macro.render())
 
 
 if __name__ == '__main__':
