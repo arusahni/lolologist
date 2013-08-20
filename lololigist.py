@@ -1,8 +1,16 @@
 #!/usr/bin/env python
+# -*- coding: utf-8 -*-
 
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+"""
+lololigist - an automated image macro generator for your commits. Simply tack it onto your
+	git repository's commit hook and let 'er rip!
+
+	Aru Sahni <arusahni@gmail.com>
+"""
 
 from __future__ import unicode_literals, print_function
 
@@ -22,16 +30,16 @@ STROKE_COLOR = (0,0,0)
 TEXT_COLOR = (255, 255, 255)
 
 class CameraSnapper(object):
-	''' A picture source '''
-
+	""" A picture source """
 	def __init__(self, warm_up_time=7, directory='/tmp/lololigist/'):
-		''' Initializes a new webcam instance '''
+		""" Initializes a new webcam instance """
 		self.temp_directory = directory
 		self.frame_offset = warm_up_time
 
+
 	@contextmanager
 	def capture_photo(self):
-		''' Captures a photo and provides it for further processing. '''
+		""" Captures a photo and provides it for further processing. """
 		try:
 			call(['mplayer', 'tv://', '-vo', 'jpeg:outdir={}'.format(self.temp_directory),'-frames', 
 				str(self.frame_offset)], stdout=DEVNULL, stderr=STDOUT)
@@ -48,8 +56,9 @@ class GitCommit(object):
 
 
 class ImageMacro(object):
-	''' An image macro '''
+	""" An image macro """
 	def __init__(self, image, top, bottom, font='impact.ttf'):
+		""" Initializes the macro with a base image, two lines of text and an optional font """
 		self.font = font
 		self.top_text = top
 		self.bottom_text = textwrap.wrap(bottom, 30)
@@ -58,7 +67,8 @@ class ImageMacro(object):
 		self.image_path = image
 
 
-	def render(self, target_path=None):
+	def render(self, target_path='macro.jpg'):
+		""" Renders the macro and writes it out to the target path. """
 		image = Image.open(self.image_path)
 		self.size = image.size
 		top_font_size = 32
@@ -80,11 +90,12 @@ class ImageMacro(object):
 
 			self.__draw_image(draw, self.bottom_text[row], bottom_font_size, bottom_position)
 		
-		image.save('macro.jpg')
-		return 'macro.jpg'
+		image.save(target_path)
+		return target_path
 
 
 	def __draw_image(self, draw, text, font_size, position, stroke_width=3): #, bottom_font_size, bottom_dimensions, stroke_width=3):
+		""" Draws the text with the given attributes to the image. """
 		font = ImageFont.truetype(self.font, font_size)
 		for x in range(-stroke_width, stroke_width + 1):
 			for y in range(-stroke_width, stroke_width + 1):
@@ -94,12 +105,14 @@ class ImageMacro(object):
 
 
 	def __get_text_dimensions(self, text, font_size):
+		""" Gets the measurements of text rendered at a specific font size. """
 		font = ImageFont.truetype(self.font, font_size)
 		return font.getsize(text)
 
 
 
-def get_picture(sha="xxxxxxxx", text="This is some really long text. Just how long will it get? I have nooooo idea. Or do I? Who knows. Only The Shadow."):
+def make_macro(sha="xxxxxxxx", text="This is some really long text. Just how long will it get? I have nooooo idea. Or do I? Who knows. Only The Shadow."):
+	""" Creates an image macro with the given text. """
 	camera = CameraSnapper()
 	with camera.capture_photo() as photo:
 		macro = ImageMacro(photo, sha, text)
