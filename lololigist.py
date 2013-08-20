@@ -14,7 +14,7 @@ lololigist - an automated image macro generator for your commits. Simply tack it
 
 from __future__ import unicode_literals, print_function
 
-import argparse, os, textwrap
+import argparse, os, textwrap, git
 from PIL import Image, ImageFont, ImageDraw
 from subprocess import call, STDOUT
 from contextlib import contextmanager
@@ -47,12 +47,6 @@ class CameraSnapper(object):
 		finally:
 			if os.path.exists(self.temp_directory):
 				rmtree(self.temp_directory)
-
-
-class GitCommit(object):
-	def __init__(self, revision, message):
-		self.revision = revision
-		self.message = message
 
 
 class ImageMacro(object):
@@ -103,7 +97,6 @@ class ImageMacro(object):
 		draw.text(position, text, TEXT_COLOR, font=font)
 
 
-
 	def __get_text_dimensions(self, text, font_size):
 		""" Gets the measurements of text rendered at a specific font size. """
 		font = ImageFont.truetype(self.font, font_size)
@@ -111,12 +104,23 @@ class ImageMacro(object):
 
 
 
-def make_macro(sha="xxxxxxxx", text="This is some really long text. Just how long will it get? I have nooooo idea. Or do I? Who knows. Only The Shadow."):
+def make_macro(sha="", message=""):
 	""" Creates an image macro with the given text. """
 	camera = CameraSnapper()
 	with camera.capture_photo() as photo:
-		macro = ImageMacro(photo, sha, text)
+		macro = ImageMacro(photo, sha, message)
 		print(macro.render())
+
+
+def get_newest_commit():
+	""" Retrieves the data for the most recent commit. """
+	repo = git.Repo('.')
+	head_ref = repo.head.reference.commit
+	return {
+		"revision" : head_ref.hexsha[0:10],
+		"summary" : head_ref.summary,
+		"message" : head_ref.message
+	}
 
 
 if __name__ == '__main__':
@@ -128,4 +132,5 @@ if __name__ == '__main__':
 
 	if args.test:
 		print('Test!')
-		get_picture()
+		commit = get_newest_commit()
+		make_macro(commit['revision'], commit['summary'])
