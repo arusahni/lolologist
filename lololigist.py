@@ -112,9 +112,9 @@ def make_macro(sha="", message=""):
 		print(macro.render())
 
 
-def get_newest_commit():
+def get_newest_commit(repo_path='.'):
 	""" Retrieves the data for the most recent commit. """
-	repo = git.Repo('.')
+	repo = git.Repo(repo_path)
 	head_ref = repo.head.reference.commit
 	return {
 		"revision" : head_ref.hexsha[0:10],
@@ -123,14 +123,35 @@ def get_newest_commit():
 	}
 
 
+def capture(args):
+	commit = get_newest_commit('.') #always capturing the current repository
+	make_macro(commit['revision'], commit['summary'])
+
+
+def register(args):
+	print("Attempting to register with repository '{}'".format(args.repository))
+
+
+def deregister(args):
+	print("Attempting to deregister with repository '{}'".format(args.repository))
+
+
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description="Document your work in style!")
-	parser.add_argument('-c, --capture', nargs=argparse.REMAINDER)
 	parser.add_argument('--test', action='store_true')
-	
-	args = parser.parse_args();
+	subparsers = parser.add_subparsers(title="action commands")
 
-	if args.test:
-		print('Test!')
-		commit = get_newest_commit()
-		make_macro(commit['revision'], commit['summary'])
+	capture_parser = subparsers.add_parser('capture', help="Capture a snapshot and apply the most recent commit")
+	capture_parser.set_defaults(func=capture)
+
+	register_parser = subparsers.add_parser('register', help="Register lololigist with a git repository")
+	register_parser.add_argument('repository', nargs='?', default='.', help="The repository to register")
+	register_parser.set_defaults(func=register)
+
+	deregister_parser = subparsers.add_parser('deregister', help="Deregister lololigist from a git repository")
+	deregister_parser.add_argument('repository', nargs='?', default='.', help="The repository to deregister")
+	deregister_parser.set_defaults(func=deregister)
+
+	args = parser.parse_args();
+	
+	args.func(args)
