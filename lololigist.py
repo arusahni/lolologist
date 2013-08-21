@@ -124,21 +124,23 @@ def get_newest_commit(repo_path='.'):
 
 
 def capture(args):
+	""" Capture the most recent commit and macro it! """
 	commit = get_newest_commit('.') #always capturing the current repository
 	make_macro(commit['revision'], commit['summary'])
 
 
 def register(args):
+	""" Register lololigist with a git repo. """
 	print("Attempting to register with repository '{}'".format(args.repository))
 
 
 def deregister(args):
+	""" Remove lololigist from a git repo. """
 	print("Attempting to deregister with repository '{}'".format(args.repository))
 
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description="Document your work in style!")
-	parser.add_argument('--test', action='store_true')
 	subparsers = parser.add_subparsers(title="action commands")
 
 	capture_parser = subparsers.add_parser('capture', help="Capture a snapshot and apply the most recent commit")
