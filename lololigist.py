@@ -14,7 +14,7 @@ lololigist - an automated image macro generator for your commits. Simply tack it
 
 from __future__ import unicode_literals, print_function
 
-import argparse, os, textwrap, git
+import argparse, os, textwrap, git, sys
 from PIL import Image, ImageFont, ImageDraw
 from subprocess import call, STDOUT
 from contextlib import contextmanager
@@ -144,7 +144,7 @@ def register(args):
 		os.makedirs(hooks_dir)
 
 	hook_file = os.path.join(hooks_dir, 'post-commit')
-	if os.path.isfile(hook_file):
+	if os.path.isfile(hook_file): #TODO: Handle multiple post-commit events in the future
 		raise Exception("There is already a post-commit hook registered for this repository.")
 
 	with open(hook_file, 'w') as script:
@@ -156,8 +156,18 @@ def register(args):
 
 def deregister(args):
 	""" Remove lololigist from a git repo. """
-	print("Attempting to deregister with repository '{}'".format(args.repository))
+	print("Attempting to deregister from the repository '{}'".format(args.repository))
+	if not os.path.isdir(os.path.join(args.repository, '.git')):
+		raise Exception("The path '{}' must contain a valid git repository".format(args.repository))
+	
+	hooks_dir = os.path.join(args.repository,'.git','hooks')
+	hook_file = os.path.join(hooks_dir, 'post-commit')
+	if not os.path.isdir(hooks_dir) or not os.path.isfile(hook_file):
+		raise Exception("lololigist does not appear to be registered with this repository.")
 
+	os.remove(hook_file) #TODO: Ensure this is actually lolologist's
+	print("Post-commit event successfully deregistered. I haz a sad.")
+	
 
 if __name__ == '__main__':
 	parser = argparse.ArgumentParser(description="Document your work in style!")
@@ -176,4 +186,7 @@ if __name__ == '__main__':
 
 	args = parser.parse_args();
 	
-	args.func(args)
+	try:
+		args.func(args)
+	except Exception as exc:
+		print("ERROR: {}".format(exc.message), file=sys.stderr)
