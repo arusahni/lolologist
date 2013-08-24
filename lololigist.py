@@ -29,6 +29,10 @@ MAX_LINES = 3
 STROKE_COLOR = (0,0,0)
 TEXT_COLOR = (255, 255, 255)
 
+POST_COMMIT_FILE = """#!/bin/sh
+lololigist capture
+"""
+
 class CameraSnapper(object):
 	""" A picture source """
 	def __init__(self, warm_up_time=7, directory='/tmp/lololigist/'):
@@ -131,7 +135,23 @@ def capture(args):
 
 def register(args):
 	""" Register lololigist with a git repo. """
-	print("Attempting to register with repository '{}'".format(args.repository))
+	print("Attempting to register with the repository '{}'".format(args.repository))
+	if not os.path.isdir(os.path.join(args.repository, '.git')):
+		raise Exception("The path '{}' must contain a valid git repository".format(args.repository))
+	
+	hooks_dir = os.path.join(args.repository,'.git','hooks')
+	if not os.path.isdir(hooks_dir):
+		os.makedirs(hooks_dir)
+
+	hook_file = os.path.join(hooks_dir, 'post-commit')
+	if os.path.isfile(hook_file):
+		raise Exception("There is already a post-commit hook registered for this repository.")
+
+	with open(hook_file, 'w') as script:
+		script.write(POST_COMMIT_FILE)
+
+	os.chmod(hook_file, 755)
+	print("Post-commit event successfully registered. Now, get commitin'!")
 
 
 def deregister(args):
