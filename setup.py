@@ -21,11 +21,11 @@ setup(name='lolologist',
       license='MPL 2.0',
       packages=['lolologist'],
       install_requires=[
-      	'argparse',
-      	'GitPython',
-      	'Pillow',
+        'argparse',
+        'GitPython',
+        'Pillow',
       ],
       entry_points = {
-      	'console_scripts': ['lolologist=lol.command_line:main'],
+        'console_scripts': ['lolologist=lol.command_line:main'],
       },
       zip_safe=False)
