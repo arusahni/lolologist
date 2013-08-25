@@ -6,7 +6,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 """
-lololigist - an automated image macro generator for your commits. Simply tack it onto your
+lolologist - an automated image macro generator for your commits. Simply tack it onto your
 	git repository's commit hook and let 'er rip!
 
 	Aru Sahni <arusahni@gmail.com>
@@ -30,12 +30,12 @@ STROKE_COLOR = (0,0,0)
 TEXT_COLOR = (255, 255, 255)
 
 POST_COMMIT_FILE = """#!/bin/sh
-lololigist capture
+lolologist capture
 """
 
 class CameraSnapper(object):
 	""" A picture source """
-	def __init__(self, warm_up_time=7, directory='/tmp/lololigist/'):
+	def __init__(self, warm_up_time=7, directory='/tmp/lolologist/'):
 		""" Initializes a new webcam instance """
 		self.temp_directory = directory
 		self.frame_offset = warm_up_time
@@ -134,7 +134,7 @@ def capture(args):
 
 
 def register(args):
-	""" Register lololigist with a git repo. """
+	""" Register lolologist with a git repo. """
 	print("Attempting to register with the repository '{}'".format(args.repository))
 	if not os.path.isdir(os.path.join(args.repository, '.git')):
 		raise Exception("The path '{}' must contain a valid git repository".format(args.repository))
@@ -155,7 +155,7 @@ def register(args):
 
 
 def deregister(args):
-	""" Remove lololigist from a git repo. """
+	""" Remove lolologist from a git repo. """
 	print("Attempting to deregister from the repository '{}'".format(args.repository))
 	if not os.path.isdir(os.path.join(args.repository, '.git')):
 		raise Exception("The path '{}' must contain a valid git repository".format(args.repository))
@@ -163,24 +163,25 @@ def deregister(args):
 	hooks_dir = os.path.join(args.repository,'.git','hooks')
 	hook_file = os.path.join(hooks_dir, 'post-commit')
 	if not os.path.isdir(hooks_dir) or not os.path.isfile(hook_file):
-		raise Exception("lololigist does not appear to be registered with this repository.")
+		raise Exception("lolologist does not appear to be registered with this repository.")
 
 	os.remove(hook_file) #TODO: Ensure this is actually lolologist's
 	print("Post-commit event successfully deregistered. I haz a sad.")
 	
 
-if __name__ == '__main__':
+def main():
+	""" Entry point for the application """
 	parser = argparse.ArgumentParser(description="Document your work in style!")
 	subparsers = parser.add_subparsers(title="action commands")
 
 	capture_parser = subparsers.add_parser('capture', help="Capture a snapshot and apply the most recent commit")
 	capture_parser.set_defaults(func=capture)
 
-	register_parser = subparsers.add_parser('register', help="Register lololigist with a git repository")
+	register_parser = subparsers.add_parser('register', help="Register lolologist with a git repository")
 	register_parser.add_argument('repository', nargs='?', default='.', help="The repository to register")
 	register_parser.set_defaults(func=register)
 
-	deregister_parser = subparsers.add_parser('deregister', help="Deregister lololigist from a git repository")
+	deregister_parser = subparsers.add_parser('deregister', help="Deregister lolologist from a git repository")
 	deregister_parser.add_argument('repository', nargs='?', default='.', help="The repository to deregister")
 	deregister_parser.set_defaults(func=deregister)
 
@@ -190,3 +191,7 @@ if __name__ == '__main__':
 		args.func(args)
 	except Exception as exc:
 		print("ERROR: {}".format(exc.message), file=sys.stderr)
+
+
+if __name__ == '__main__':
+	main()
