@@ -4,6 +4,7 @@
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
+# pylint: disable=I0011
 
 """
 lolologist - an automated image macro generator for your commits. Simply tack it onto your
@@ -26,14 +27,14 @@ except ImportError:
     DEVNULL = open(os.devnull, 'wb')
 
 MAX_LINES = 3
-STROKE_COLOR = (0,0,0)
+STROKE_COLOR = (0, 0, 0)
 TEXT_COLOR = (255, 255, 255)
 
 POST_COMMIT_FILE = """#!/bin/sh
 lolologist capture
 """
 
-class CameraSnapper(object):
+class CameraSnapper(object): #pylint: disable=R0903
     """ A picture source """
     def __init__(self, warm_up_time=7, directory='/tmp/lolologist/'):
         """ Initializes a new webcam instance """
@@ -45,7 +46,7 @@ class CameraSnapper(object):
     def capture_photo(self):
         """ Captures a photo and provides it for further processing. """
         try:
-            call(['mplayer', 'tv://', '-vo', 'jpeg:outdir={}'.format(self.temp_directory),'-frames', 
+            call(['mplayer', 'tv://', '-vo', 'jpeg:outdir={}'.format(self.temp_directory), '-frames',
                 str(self.frame_offset)], stdout=DEVNULL, stderr=STDOUT)
             yield os.path.join(self.temp_directory, '{0:08d}.jpg'.format(self.frame_offset))
         finally:
@@ -61,9 +62,9 @@ class ImageMacro(object):
         self.top_text = top
         self.bottom_text = textwrap.wrap(bottom, 30)
         if len(self.bottom_text) > MAX_LINES:
-            self.bottom_text[MAX_LINES - 1] = self.bottom_text[MAX_LINES - 1] + '\u2026'
+            self.bottom_text[MAX_LINES - 1] = self.bottom_text[MAX_LINES - 1] + '\u2026' #pylint: disable=W1402
         self.image_path = image
-
+        self.size = (0, 0)
 
     def render(self, target_path='macro.jpg'):
         """ Renders the macro and writes it out to the target path. """
@@ -92,12 +93,12 @@ class ImageMacro(object):
         return target_path
 
 
-    def __draw_image(self, draw, text, font_size, position, stroke_width=3): #, bottom_font_size, bottom_dimensions, stroke_width=3):
+    def __draw_image(self, draw, text, font_size, position, stroke_width=3):
         """ Draws the text with the given attributes to the image. """
         font = ImageFont.truetype(self.font, font_size)
-        for x in range(-stroke_width, stroke_width + 1):
-            for y in range(-stroke_width, stroke_width + 1):
-                draw.text((position[0] + x, position[1] + y), text, STROKE_COLOR, font=font)
+        for x_off in range(-stroke_width, stroke_width + 1):
+            for y_off in range(-stroke_width, stroke_width + 1):
+                draw.text((position[0] + x_off, position[1] + y_off), text, STROKE_COLOR, font=font)
         draw.text(position, text, TEXT_COLOR, font=font)
 
 
@@ -127,7 +128,7 @@ def get_newest_commit(repo_path='.'):
     }
 
 
-def capture(args):
+def capture(args): #pylint: disable=W0613
     """ Capture the most recent commit and macro it! """
     commit = get_newest_commit('.') #always capturing the current repository
     make_macro(commit['revision'], commit['summary'])
@@ -139,7 +140,7 @@ def register(args):
     if not os.path.isdir(os.path.join(args.repository, '.git')):
         raise Exception("The path '{}' must contain a valid git repository".format(args.repository))
     
-    hooks_dir = os.path.join(args.repository,'.git','hooks')
+    hooks_dir = os.path.join(args.repository, '.git', 'hooks')
     if not os.path.isdir(hooks_dir):
         os.makedirs(hooks_dir)
 
@@ -160,7 +161,7 @@ def deregister(args):
     if not os.path.isdir(os.path.join(args.repository, '.git')):
         raise Exception("The path '{}' must contain a valid git repository".format(args.repository))
     
-    hooks_dir = os.path.join(args.repository,'.git','hooks')
+    hooks_dir = os.path.join(args.repository, '.git', 'hooks')
     hook_file = os.path.join(hooks_dir, 'post-commit')
     if not os.path.isdir(hooks_dir) or not os.path.isfile(hook_file):
         raise Exception("lolologist does not appear to be registered with this repository.")
@@ -185,8 +186,8 @@ def main():
     deregister_parser.add_argument('repository', nargs='?', default='.', help="The repository to deregister")
     deregister_parser.set_defaults(func=deregister)
 
-    args = parser.parse_args();
-    
+    args = parser.parse_args()
+
     try:
         args.func(args)
     except Exception as exc:
@@ -195,3 +196,4 @@ def main():
 
 if __name__ == '__main__':
     main()
+    
