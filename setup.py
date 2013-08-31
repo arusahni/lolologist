@@ -20,6 +20,8 @@ setup(name='lolologist',
       author_email='arusahni@gmail.com',
       license='MPL 2.0',
       packages=['lolologist'],
+      package_data={'lolologist':['impact.ttf',]},
+      include_package_data=True,
       install_requires=[
         'argparse',
         'GitPython',
