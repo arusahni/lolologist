@@ -24,3 +24,10 @@ In order to use lolologist, you must also install the following packages:
 * mplayer
 
 To install lolologist, after confirming that the above prerequisites are installed, run `sudo python setup.py install`
+
+Using
+-----
+1. Within the root of your git repository, type `lolologist register`. This should add a githook that will trigger the program every time you commit.
+2. Commit!
+
+The path your photo will be printed in the commit output.  Right now, this is `~/.lolologist/{project name}/{10-char sha1}.jpg`. I plan on making it configurable, though.

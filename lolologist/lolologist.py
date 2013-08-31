@@ -30,6 +30,10 @@ MAX_LINES = 3
 STROKE_COLOR = (0, 0, 0)
 TEXT_COLOR = (255, 255, 255)
 
+OUTPUT_DIRECTORY = os.path.join(os.path.expanduser('~'), '.lolologist', '{project}')
+OUTPUT_FILE_NAME = '{revision}'
+OUTPUT_FORMAT = 'jpg'
+
 POST_COMMIT_FILE = """#!/bin/sh
 lolologist capture
 """
@@ -70,8 +74,9 @@ class ImageMacro(object):
         self.image_path = image
         self.size = (0, 0)
 
-    def render(self, target_path='macro.jpg'):
-        """ Renders the macro and writes it out to the target path. """
+
+    def render(self):
+        """ Returns the rendered macro. """
         image = Image.open(self.image_path)
         self.size = image.size
         top_font_size = 32
@@ -90,11 +95,9 @@ class ImageMacro(object):
             bottom_dimensions = self.__get_text_dimensions(self.bottom_text[row], bottom_font_size)
             bottom_position = (self.size[0]/2 - bottom_dimensions[0]/2,
                                 self.size[1] - bottom_offset - bottom_dimensions[1])
-
             self.__draw_image(draw, self.bottom_text[row], bottom_font_size, bottom_position)
         
-        image.save(target_path)
-        return target_path
+        return image
 
 
     def __draw_image(self, draw, text, font_size, position, stroke_width=3):
@@ -113,12 +116,21 @@ class ImageMacro(object):
 
 
 
-def make_macro(sha="", message=""):
+def make_macro(revision, summary, **kwargs):
     """ Creates an image macro with the given text. """
     camera = CameraSnapper()
     with camera.capture_photo() as photo:
-        macro = ImageMacro(photo, sha, message)
-        print(macro.render())
+        macro = ImageMacro(photo, revision, summary)
+        image = macro.render()
+        directory_path = OUTPUT_DIRECTORY.format(revision=revision, **kwargs)
+        if not os.path.isdir(directory_path):
+            os.makedirs(directory_path)
+        file_path = os.path.join(OUTPUT_DIRECTORY, OUTPUT_FILE_NAME).format(
+            revision=revision,
+            **kwargs
+        ) + '.' + OUTPUT_FORMAT
+        image.save(file_path)
+        return file_path
 
 
 def get_newest_commit(repo_path='.'):
@@ -126,16 +138,17 @@ def get_newest_commit(repo_path='.'):
     repo = git.Repo(repo_path)
     head_ref = repo.head.reference.commit
     return {
+        "project" : os.path.basename(repo.working_dir),
         "revision" : head_ref.hexsha[0:10],
         "summary" : head_ref.summary,
-        "message" : head_ref.message
+        "message" : head_ref.message,
     }
 
 
 def capture(args): #pylint: disable=W0613
     """ Capture the most recent commit and macro it! """
     commit = get_newest_commit('.') #always capturing the current repository
-    make_macro(commit['revision'], commit['summary'])
+    print(make_macro(**commit))
 
 
 def register(args):
