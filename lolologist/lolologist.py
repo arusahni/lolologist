@@ -58,7 +58,7 @@ class ImageMacro(object):
     """ An image macro """
     def __init__(self, image, top, bottom, font='impact.ttf'):
         """ Initializes the macro with a base image, two lines of text and an optional font """
-        self.font = font
+        self.font = os.path.join(os.path.dirname(__file__), font)
         self.top_text = top
         self.bottom_text = textwrap.wrap(bottom, 30)
         if len(self.bottom_text) > MAX_LINES:
