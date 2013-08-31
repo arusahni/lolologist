@@ -34,6 +34,10 @@ POST_COMMIT_FILE = """#!/bin/sh
 lolologist capture
 """
 
+class LolologistError(Exception):
+    """ Custom error types """
+    pass
+
 class CameraSnapper(object): #pylint: disable=R0903
     """ A picture source """
     def __init__(self, warm_up_time=7, directory='/tmp/lolologist/'):
@@ -80,7 +84,7 @@ class ImageMacro(object):
         self.__draw_image(draw, self.top_text, top_font_size, top_position)
         
         lines = min(len(self.bottom_text), MAX_LINES)
-        print(lines)
+
         for row in range(lines):
             bottom_offset = ((lines - 1 - row) * bottom_font_size) + 5
             bottom_dimensions = self.__get_text_dimensions(self.bottom_text[row], bottom_font_size)
@@ -138,7 +142,7 @@ def register(args):
     """ Register lolologist with a git repo. """
     print("Attempting to register with the repository '{}'".format(args.repository))
     if not os.path.isdir(os.path.join(args.repository, '.git')):
-        raise Exception("The path '{}' must contain a valid git repository".format(args.repository))
+        raise LolologistError("The path '{}' must contain a valid git repository".format(args.repository))
     
     hooks_dir = os.path.join(args.repository, '.git', 'hooks')
     if not os.path.isdir(hooks_dir):
@@ -146,7 +150,7 @@ def register(args):
 
     hook_file = os.path.join(hooks_dir, 'post-commit')
     if os.path.isfile(hook_file): #TODO: Handle multiple post-commit events in the future
-        raise Exception("There is already a post-commit hook registered for this repository.")
+        raise LolologistError("There is already a post-commit hook registered for this repository.")
 
     with open(hook_file, 'w') as script:
         script.write(POST_COMMIT_FILE)
@@ -159,12 +163,12 @@ def deregister(args):
     """ Remove lolologist from a git repo. """
     print("Attempting to deregister from the repository '{}'".format(args.repository))
     if not os.path.isdir(os.path.join(args.repository, '.git')):
-        raise Exception("The path '{}' must contain a valid git repository".format(args.repository))
+        raise LolologistError("The path '{}' must contain a valid git repository".format(args.repository))
     
     hooks_dir = os.path.join(args.repository, '.git', 'hooks')
     hook_file = os.path.join(hooks_dir, 'post-commit')
     if not os.path.isdir(hooks_dir) or not os.path.isfile(hook_file):
-        raise Exception("lolologist does not appear to be registered with this repository.")
+        raise LolologistError("lolologist does not appear to be registered with this repository.")
 
     os.remove(hook_file) #TODO: Ensure this is actually lolologist's
     print("Post-commit event successfully deregistered. I haz a sad.")
@@ -190,7 +194,7 @@ def main():
 
     try:
         args.func(args)
-    except Exception as exc:
+    except LolologistError as exc:
         print("ERROR: {}".format(exc.message), file=sys.stderr)
 
 
