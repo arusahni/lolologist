@@ -26,6 +26,6 @@ setup(name='lolologist',
         'Pillow',
       ],
       entry_points = {
-        'console_scripts': ['lolologist=lol.command_line:main'],
+        'console_scripts': ['lolologist=lolologist.lolologist:main'],
       },
       zip_safe=False)
