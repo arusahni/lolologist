@@ -15,7 +15,7 @@ lolologist - an automated image macro generator for your commits. Simply tack it
 
 from __future__ import unicode_literals, print_function
 
-import argparse, os, textwrap, git, sys
+import argparse, os, textwrap, git, sys, stat
 from PIL import Image, ImageFont, ImageDraw
 from subprocess import call, STDOUT
 from contextlib import contextmanager
@@ -155,7 +155,8 @@ def register(args):
     with open(hook_file, 'w') as script:
         script.write(POST_COMMIT_FILE)
 
-    os.chmod(hook_file, 755)
+    hook_perms = os.stat(hook_file)
+    os.chmod(hook_file, hook_perms.st_mode | stat.S_IEXEC)
     print("Post-commit event successfully registered. Now, get commitin'!")
 
 
