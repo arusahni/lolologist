@@ -6,3 +6,21 @@ A python-based tool that generates an image macro from your webcam whenever you 
 Disclaimer
 ----------
 Still working on packaging. Use at your own risk.
+
+Installing
+------------
+*BEFORE* installing lolologist, make sure that the following packages are installed locally:
+
+* python-dev
+* libfreetype6-dev
+* libjpeg-dev
+
+If pillow is already installed and you do not have the packages above, you need to uninstall it and install those packages. This is because when pillow is installed, it compiles optional features based on the availability of those packages. You would do this with commands:
+
+    sudo pip uninstall pillow
+    sudo apt-get install python-dev libfreetype6-dev libjpeg-dev
+
+In order to use lolologist, you must also install the following packages:
+* mplayer
+
+To install lolologist, after confirming that the above prerequisites are installed, run `sudo python setup.py install`
