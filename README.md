@@ -30,4 +30,4 @@ Using
 1. Within the root of your git repository, type `lolologist register`. This should add a githook that will trigger the program every time you commit.
 2. Commit!
 
-The path your photo will be printed in the commit output.  Right now, this is `~/.lolologist/{project name}/{10-char sha1}.jpg`. I plan on making it configurable, though.
+The path to your photo will be printed in the commit output.  Right now, this is `~/.lolologist/{project name}/{10-char sha1}.jpg`. I plan on making it configurable, though.
