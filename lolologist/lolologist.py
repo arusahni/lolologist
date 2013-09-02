@@ -15,6 +15,7 @@ lolologist - an automated image macro generator for your commits. Simply tack it
 
 from __future__ import unicode_literals, print_function
 
+import configparser
 import argparse, os, textwrap, git, sys, stat
 from PIL import Image, ImageFont, ImageDraw
 from subprocess import call, STDOUT
@@ -30,9 +31,7 @@ MAX_LINES = 3
 STROKE_COLOR = (0, 0, 0)
 TEXT_COLOR = (255, 255, 255)
 
-OUTPUT_DIRECTORY = os.path.join(os.path.expanduser('~'), '.lolologist', '{project}')
-OUTPUT_FILE_NAME = '{revision}'
-OUTPUT_FORMAT = 'jpg'
+CONFIG = None
 
 POST_COMMIT_FILE = """#!/bin/sh
 lolologist capture
@@ -115,6 +114,36 @@ class ImageMacro(object):
         return font.getsize(text)
 
 
+class Config(object): #pylint: disable=R0903
+    def __init__(self, section="DEFAULT"):
+        """ Creates a configuration object """
+        self.config_file = os.path.expanduser('~/.lolologistrc')
+        if not os.path.isfile(self.config_file):
+            self.__create_config()
+        config = configparser.ConfigParser()
+        config.read(self.config_file)
+        if section in config:
+            self.parser = config[section]
+        else:
+            self.parser = config['DEFAULT']
+
+
+    def __create_config(self):
+        """ Creates the file with acceptable defaults """
+        config = configparser.ConfigParser()
+        config['DEFAULT'] = {
+            "OutputDirectory" : os.path.join(os.path.expanduser('~'), '.lolologist', '{project}'),
+            "OutputFileName" : '{revision}',
+            "OutputFormat" : 'jpg',
+        }
+        with open(self.config_file, 'w') as config_file:
+            config.write(config_file)
+
+
+    def __getitem__(self, field):
+        """ Gets the value of a specific field """
+        return self.parser[field]
+
 
 def make_macro(revision, summary, **kwargs):
     """ Creates an image macro with the given text. """
@@ -122,13 +151,13 @@ def make_macro(revision, summary, **kwargs):
     with camera.capture_photo() as photo:
         macro = ImageMacro(photo, revision, summary)
         image = macro.render()
-        directory_path = OUTPUT_DIRECTORY.format(revision=revision, **kwargs)
+        directory_path = CONFIG['OutputDirectory'].format(revision=revision, **kwargs)
         if not os.path.isdir(directory_path):
             os.makedirs(directory_path)
-        file_path = os.path.join(OUTPUT_DIRECTORY, OUTPUT_FILE_NAME).format(
+        file_path = os.path.join(CONFIG['OutputDirectory'], CONFIG['OutputFileName']).format(
             revision=revision,
             **kwargs
-        ) + '.' + OUTPUT_FORMAT
+        ) + '.' + CONFIG["OutputFormat"]
         image.save(file_path)
         return file_path
 
@@ -213,5 +242,6 @@ def main():
 
 
 if __name__ == '__main__':
+    CONFIG = Config()
     main()
     

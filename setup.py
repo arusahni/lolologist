@@ -26,6 +26,7 @@ setup(name='lolologist',
         'argparse',
         'GitPython',
         'Pillow',
+        'configparser',
       ],
       entry_points = {
         'console_scripts': ['lolologist=lolologist.lolologist:main'],
