@@ -31,8 +31,6 @@ MAX_LINES = 3
 STROKE_COLOR = (0, 0, 0)
 TEXT_COLOR = (255, 255, 255)
 
-CONFIG = None
-
 POST_COMMIT_FILE = """#!/bin/sh
 lolologist capture
 """
@@ -151,19 +149,19 @@ class Config(object): #pylint: disable=R0903
         return len(self.parser)
 
 
-def make_macro(revision, summary, **kwargs):
+def make_macro(config, revision, summary, **kwargs):
     """ Creates an image macro with the given text. """
     camera = CameraSnapper()
     with camera.capture_photo() as photo:
         macro = ImageMacro(photo, revision, summary)
         image = macro.render()
-        directory_path = CONFIG['OutputDirectory'].format(revision=revision, **kwargs)
+        directory_path = config['OutputDirectory'].format(revision=revision, **kwargs)
         if not os.path.isdir(directory_path):
             os.makedirs(directory_path)
-        file_path = os.path.join(CONFIG['OutputDirectory'], CONFIG['OutputFileName']).format(
+        file_path = os.path.join(config['OutputDirectory'], config['OutputFileName']).format(
             revision=revision,
             **kwargs
-        ) + '.' + CONFIG["OutputFormat"]
+        ) + '.' + config["OutputFormat"]
         image.save(file_path)
         return file_path
 
@@ -180,13 +178,13 @@ def get_newest_commit(repo_path='.'):
     }
 
 
-def capture(args): #pylint: disable=W0613
+def capture(config, args): #pylint: disable=W0613
     """ Capture the most recent commit and macro it! """
     commit = get_newest_commit('.') #always capturing the current repository
-    print(make_macro(**commit))
+    print(make_macro(config, **commit))
 
 
-def register(args):
+def register(config, args): #pylint: disable=W0613
     """ Register lolologist with a git repo. """
     print("Attempting to register with the repository '{}'".format(args.repository))
     if not os.path.isdir(os.path.join(args.repository, '.git')):
@@ -208,7 +206,7 @@ def register(args):
     print("Post-commit event successfully registered. Now, get commitin'!")
 
 
-def deregister(args):
+def deregister(config, args): #pylint: disable=W0613
     """ Remove lolologist from a git repo. """
     print("Attempting to deregister from the repository '{}'".format(args.repository))
     if not os.path.isdir(os.path.join(args.repository, '.git')):
@@ -225,6 +223,7 @@ def deregister(args):
 
 def main():
     """ Entry point for the application """
+    config = Config()
     parser = argparse.ArgumentParser(description="Document your work in style!")
     subparsers = parser.add_subparsers(title="action commands")
 
@@ -242,12 +241,11 @@ def main():
     args = parser.parse_args()
 
     try:
-        args.func(args)
+        args.func(config, args)
     except LolologistError as exc:
         print("ERROR: {}".format(exc.message), file=sys.stderr)
 
 
 if __name__ == '__main__':
-    CONFIG = Config()
     main()
     
