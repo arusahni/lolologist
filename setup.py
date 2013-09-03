@@ -24,7 +24,7 @@ setup(name='lolologist',
       include_package_data=True,
       install_requires=[
         'argparse',
-        'GitPython',
+        'GitPython>=0.3.2.RC1',
         'Pillow',
         'configparser',
       ],
