@@ -115,6 +115,7 @@ class ImageMacro(object):
 
 
 class Config(object): #pylint: disable=R0903
+    """ Handles configuration creation and access. """
     def __init__(self, section="DEFAULT"):
         """ Creates a configuration object """
         self.config_file = os.path.expanduser('~/.lolologistrc')
@@ -143,6 +144,11 @@ class Config(object): #pylint: disable=R0903
     def __getitem__(self, field):
         """ Gets the value of a specific field """
         return self.parser[field]
+
+
+    def __len__(self):
+        """ Required for Lintin'"""
+        return len(self.parser)
 
 
 def make_macro(revision, summary, **kwargs):
