@@ -148,103 +148,109 @@ class Config(object): #pylint: disable=R0903
         """ Required for Lintin'"""
         return len(self.parser)
 
+class Lolologist(object):
+    """ The main application """
 
-def make_macro(config, revision, summary, **kwargs):
-    """ Creates an image macro with the given text. """
-    camera = CameraSnapper()
-    with camera.capture_photo() as photo:
-        macro = ImageMacro(photo, revision, summary)
-        image = macro.render()
-        directory_path = config['OutputDirectory'].format(revision=revision, **kwargs)
-        if not os.path.isdir(directory_path):
-            os.makedirs(directory_path)
-        file_path = os.path.join(config['OutputDirectory'], config['OutputFileName']).format(
-            revision=revision,
-            **kwargs
-        ) + '.' + config["OutputFormat"]
-        image.save(file_path)
-        return file_path
+    def __init__(self, repo_path='.'):
+        self.config = Config()
+        self.repo_path = repo_path
 
 
-def get_newest_commit(repo_path='.'):
-    """ Retrieves the data for the most recent commit. """
-    repo = git.Repo(repo_path)
-    head_ref = repo.head.reference.commit
-    return {
-        "project" : os.path.basename(repo.working_dir),
-        "revision" : head_ref.hexsha[0:10],
-        "summary" : head_ref.summary,
-        "message" : head_ref.message,
-    }
+    def __make_macro(self, revision, summary, **kwargs):
+        """ Creates an image macro with the given text. """
+        camera = CameraSnapper()
+        with camera.capture_photo() as photo:
+            macro = ImageMacro(photo, revision, summary)
+            image = macro.render()
+            directory_path = self.config['OutputDirectory'].format(revision=revision, **kwargs)
+            if not os.path.isdir(directory_path):
+                os.makedirs(directory_path)
+            file_path = os.path.join(self.config['OutputDirectory'], self.config['OutputFileName']).format(
+                revision=revision,
+                **kwargs
+            ) + '.' + self.config["OutputFormat"]
+            image.save(file_path)
+            return file_path
 
 
-def capture(config, args): #pylint: disable=W0613
-    """ Capture the most recent commit and macro it! """
-    commit = get_newest_commit('.') #always capturing the current repository
-    print(make_macro(config, **commit))
+    def __get_newest_commit(self):
+        """ Retrieves the data for the most recent commit. """
+        repo = git.Repo(self.repo_path)
+        head_ref = repo.head.reference.commit
+        return {
+            "project" : os.path.basename(repo.working_dir),
+            "revision" : head_ref.hexsha[0:10],
+            "summary" : head_ref.summary,
+            "message" : head_ref.message,
+        }
 
 
-def register(config, args): #pylint: disable=W0613
-    """ Register lolologist with a git repo. """
-    print("Attempting to register with the repository '{}'".format(args.repository))
-    if not os.path.isdir(os.path.join(args.repository, '.git')):
-        raise LolologistError("The path '{}' must contain a valid git repository".format(args.repository))
-    
-    hooks_dir = os.path.join(args.repository, '.git', 'hooks')
-    if not os.path.isdir(hooks_dir):
-        os.makedirs(hooks_dir)
-
-    hook_file = os.path.join(hooks_dir, 'post-commit')
-    if os.path.isfile(hook_file): #TODO: Handle multiple post-commit events in the future
-        raise LolologistError("There is already a post-commit hook registered for this repository.")
-
-    with open(hook_file, 'w') as script:
-        script.write(POST_COMMIT_FILE)
-
-    hook_perms = os.stat(hook_file)
-    os.chmod(hook_file, hook_perms.st_mode | stat.S_IEXEC)
-    print("Post-commit event successfully registered. Now, get commitin'!")
+    def capture(self, args): #pylint: disable=W0613
+        """ Capture the most recent commit and macro it! """
+        commit = self.__get_newest_commit()
+        print(self.__make_macro(**commit))
 
 
-def deregister(config, args): #pylint: disable=W0613
-    """ Remove lolologist from a git repo. """
-    print("Attempting to deregister from the repository '{}'".format(args.repository))
-    if not os.path.isdir(os.path.join(args.repository, '.git')):
-        raise LolologistError("The path '{}' must contain a valid git repository".format(args.repository))
-    
-    hooks_dir = os.path.join(args.repository, '.git', 'hooks')
-    hook_file = os.path.join(hooks_dir, 'post-commit')
-    if not os.path.isdir(hooks_dir) or not os.path.isfile(hook_file):
-        raise LolologistError("lolologist does not appear to be registered with this repository.")
+    def register(self, args): #pylint: disable=W0613
+        """ Register lolologist with a git repo. """
+        print("Attempting to register with the repository '{}'".format(args.repository))
+        if not os.path.isdir(os.path.join(args.repository, '.git')):
+            raise LolologistError("The path '{}' must contain a valid git repository".format(args.repository))
+        
+        hooks_dir = os.path.join(args.repository, '.git', 'hooks')
+        if not os.path.isdir(hooks_dir):
+            os.makedirs(hooks_dir)
 
-    os.remove(hook_file) #TODO: Ensure this is actually lolologist's
-    print("Post-commit event successfully deregistered. I haz a sad.")
+        hook_file = os.path.join(hooks_dir, 'post-commit')
+        if os.path.isfile(hook_file): #TODO: Handle multiple post-commit events in the future
+            raise LolologistError("There is already a post-commit hook registered for this repository.")
+
+        with open(hook_file, 'w') as script:
+            script.write(POST_COMMIT_FILE)
+
+        hook_perms = os.stat(hook_file)
+        os.chmod(hook_file, hook_perms.st_mode | stat.S_IEXEC)
+        print("Post-commit event successfully registered. Now, get commitin'!")
+
+
+    def deregister(self, args): #pylint: disable=W0613
+        """ Remove lolologist from a git repo. """
+        print("Attempting to deregister from the repository '{}'".format(args.repository))
+        if not os.path.isdir(os.path.join(args.repository, '.git')):
+            raise LolologistError("The path '{}' must contain a valid git repository".format(args.repository))
+        
+        hooks_dir = os.path.join(args.repository, '.git', 'hooks')
+        hook_file = os.path.join(hooks_dir, 'post-commit')
+        if not os.path.isdir(hooks_dir) or not os.path.isfile(hook_file):
+            raise LolologistError("lolologist does not appear to be registered with this repository.")
+
+        os.remove(hook_file) #TODO: Ensure this is actually lolologist's
+        print("Post-commit event successfully deregistered. I haz a sad.")
     
 
 def main():
     """ Entry point for the application """
-    config = Config()
+    app = Lolologist()
     parser = argparse.ArgumentParser(description="Document your work in style!")
     subparsers = parser.add_subparsers(title="action commands")
 
     capture_parser = subparsers.add_parser('capture', help="Capture a snapshot and apply the most recent commit")
-    capture_parser.set_defaults(func=capture)
+    capture_parser.set_defaults(func=app.capture)
 
     register_parser = subparsers.add_parser('register', help="Register lolologist with a git repository")
     register_parser.add_argument('repository', nargs='?', default='.', help="The repository to register")
-    register_parser.set_defaults(func=register)
+    register_parser.set_defaults(func=app.register)
 
     deregister_parser = subparsers.add_parser('deregister', help="Deregister lolologist from a git repository")
     deregister_parser.add_argument('repository', nargs='?', default='.', help="The repository to deregister")
-    deregister_parser.set_defaults(func=deregister)
+    deregister_parser.set_defaults(func=app.deregister)
 
     args = parser.parse_args()
 
     try:
-        args.func(config, args)
+        args.func(args)
     except LolologistError as exc:
         print("ERROR: {}".format(exc.message), file=sys.stderr)
-
 
 if __name__ == '__main__':
     main()
