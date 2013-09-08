@@ -18,7 +18,7 @@ from __future__ import unicode_literals, print_function
 import configparser
 import argparse, os, textwrap, git, sys, stat
 from PIL import Image, ImageFont, ImageDraw
-from subprocess import call, STDOUT
+from subprocess import call, check_output, STDOUT
 from contextlib import contextmanager
 from shutil import rmtree
 from datetime import datetime
@@ -31,6 +31,7 @@ except ImportError:
 MAX_LINES = 3
 STROKE_COLOR = (0, 0, 0)
 TEXT_COLOR = (255, 255, 255)
+FALLBACK_FONT = "LeagueGothic-Regular.otf"
 
 POST_COMMIT_FILE = """#!/bin/sh
 lolologist capture
@@ -62,7 +63,7 @@ class CameraSnapper(object): #pylint: disable=R0903
 
 class ImageMacro(object):
     """ An image macro """
-    def __init__(self, image, top, bottom, font='impact.ttf'):
+    def __init__(self, image, top, bottom, font):
         """ Initializes the macro with a base image, two lines of text and an optional font """
         self.font = os.path.join(os.path.dirname(__file__), font)
         self.top_text = top
@@ -122,10 +123,11 @@ class Config(object): #pylint: disable=R0903
             self.__create_config()
         config = configparser.ConfigParser()
         config.read(self.config_file)
-        if section in config:
-            self.parser = config[section]
+        if section not in config:
+            self.__section = "DEFAULT"
         else:
-            self.parser = config['DEFAULT']
+            self.__section = section
+        self.__parser = config[self.__section]
 
 
     def __create_config(self):
@@ -136,18 +138,44 @@ class Config(object): #pylint: disable=R0903
             "OutputFileName" : '{revision}',
             "OutputFormat" : 'jpg',
         }
+
+        font_path = get_impact()
+        if font_path:
+            config['DEFAULT']['FontPath'] = font_path
+
         with open(self.config_file, 'w') as config_file:
             config.write(config_file)
 
 
     def __getitem__(self, field):
         """ Gets the value of a specific field """
-        return self.parser[field]
+        return self.__parser[field]
 
 
     def __len__(self):
         """ Required for Lintin'"""
-        return len(self.parser)
+        return len(self.__parser)
+
+
+    def get_font(self):
+        """ Gets the configuration entry for the macro font. """
+        font = self.__parser.get('FontPath', FALLBACK_FONT)
+        if font == FALLBACK_FONT:
+            print("WARNING: No font found. Using fallback. Run `lolologist setfont --help` for more information.")
+        return font
+
+
+    def update_config(self, setting, value):
+        """ Sets a value for the specific setting in the DEFAULT section. """
+        config = configparser.ConfigParser()
+        config.read(self.config_file)
+        config["DEFAULT"][setting] = value
+
+        with open(self.config_file, 'w') as config_file:
+            config.write(config_file)
+
+        self.__parser = config[self.__section]
+
 
 class Lolologist(object):
     """ The main application """
@@ -161,7 +189,7 @@ class Lolologist(object):
         """ Creates an image macro with the given text. """
         camera = CameraSnapper()
         with camera.capture_photo() as photo:
-            macro = ImageMacro(photo, revision, summary)
+            macro = ImageMacro(photo, revision, summary, self.config.get_font())
             image = macro.render()
             directory_path = self.config['OutputDirectory'].format(revision=revision, **kwargs)
             if not os.path.isdir(directory_path):
@@ -228,7 +256,29 @@ class Lolologist(object):
 
         os.remove(hook_file) #TODO: Ensure this is actually lolologist's
         print("Post-commit event successfully deregistered. I haz a sad.")
+
+    def set_font(self, args):
+        """ Sets the default image macro font. """
+        font_path = args.font_path if args.font_path else get_impact()
+        if font_path:
+            self.config.update_config("FontPath", font_path)
+            print("Font successfully set to '{}'".format(font_path))
+        else:
+            raise LolologistError("Could not find Impact. Falling back to League Gothic.")
+
     
+
+def get_impact():
+    locs = check_output(['locate', '--regex', '-i', 'Impact.ttf$'], stderr=STDOUT)
+    font_path = None
+    for loc in locs.splitlines():
+        if loc.startswith("/usr"): #most likely a permanent font
+            font_path = loc
+            break
+        elif font_path is None:
+            font_path = loc
+    return font_path
+
 
 def main():
     """ Entry point for the application """
@@ -247,8 +297,13 @@ def main():
     deregister_parser.add_argument('repository', nargs='?', default='.', help="The repository to deregister")
     deregister_parser.set_defaults(func=app.deregister)
 
-    args = parser.parse_args()
+    setfont_parser = subparsers.add_parser('setfont', help="Set the font to use for image macros.")
+    setfont_parser.add_argument('font_path', nargs="?",
+        help="The full path to the desired font. If none is specified, attempt to find the system's Impact font."
+    )
+    setfont_parser.set_defaults(func=app.set_font)
 
+    args = parser.parse_args()
     try:
         args.func(args)
     except LolologistError as exc:
