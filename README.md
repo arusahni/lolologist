@@ -43,3 +43,8 @@ Possible substition parameters:
 | `message`  | *string*   | The entire commit message.                 |
 | `time`     | *datetime* | The time of the commit.                    |
 
+Fonts
+-----
+Due to licensing concerns, I can't distribute Lolologist with the iconic Impact TrueType font.  To account for this, lolologist will use your system's Impact if it exists, or fall back to an open font.
+
+If Impact isn't installed on your system, [download and install it](http://www.cufonfonts.com/en/font/12047/impact), and then either run `lolologist setfont` or `lolologist setfont <path-to-font>` to load it.

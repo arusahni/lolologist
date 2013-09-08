@@ -41,6 +41,7 @@ class LolologistError(Exception):
     """ Custom error types """
     pass
 
+
 class CameraSnapper(object): #pylint: disable=R0903
     """ A picture source """
     def __init__(self, warm_up_time=7, directory='/tmp/lolologist/'):
@@ -257,6 +258,7 @@ class Lolologist(object):
         os.remove(hook_file) #TODO: Ensure this is actually lolologist's
         print("Post-commit event successfully deregistered. I haz a sad.")
 
+
     def set_font(self, args):
         """ Sets the default image macro font. """
         font_path = args.font_path if args.font_path else get_impact()
@@ -269,6 +271,7 @@ class Lolologist(object):
     
 
 def get_impact():
+    """ Finds Impact.ttf on one's system and returns the best path for it. """
     locs = check_output(['locate', '--regex', '-i', 'Impact.ttf$'], stderr=STDOUT)
     font_path = None
     for loc in locs.splitlines():
@@ -308,6 +311,7 @@ def main():
         args.func(args)
     except LolologistError as exc:
         print("ERROR: {}".format(exc.message), file=sys.stderr)
+
 
 if __name__ == '__main__':
     main()
