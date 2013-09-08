@@ -21,6 +21,7 @@ from PIL import Image, ImageFont, ImageDraw
 from subprocess import call, STDOUT
 from contextlib import contextmanager
 from shutil import rmtree
+from datetime import datetime
 
 try:
     from subprocess import DEVNULL
@@ -182,6 +183,7 @@ class Lolologist(object):
             "revision" : head_ref.hexsha[0:10],
             "summary" : head_ref.summary,
             "message" : head_ref.message,
+            "time" : datetime.fromtimestamp(head_ref.committed_date),
         }
 
 
