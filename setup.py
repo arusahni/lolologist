@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='lolologist',
-      version='0.1',
+      version='0.2',
       description='A utility that generates an image macro from your webcam whenever \
         you commit to a git repository.',
       classifiers=[

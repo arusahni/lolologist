@@ -3,10 +3,6 @@ lolologist
 
 A python-based tool that generates an image macro from your webcam whenever you commit to a git repository. Inspired by [lolcommits](https://github.com/mroth/lolcommits).
 
-Disclaimer
-----------
-Still working on packaging. Use at your own risk.
-
 Installing
 ------------
 *BEFORE* installing lolologist, make sure that the following packages are installed locally:
@@ -30,4 +26,20 @@ Using
 1. Within the root of your git repository, type `lolologist register`. This should add a githook that will trigger the program every time you commit.
 2. Commit!
 
-The path to your photo will be printed in the commit output.  Right now, this is `~/.lolologist/{project name}/{10-char sha1}.jpg`. I plan on making it configurable, though.
+The path to your photo will be printed in the commit output.  To configure this, please edit the `~/.lolologistrc` file.  Pythonic format strings are accepted, with the caveat that *percent signs have to be escaped with another percent sign*.
+
+For example, if you wanted to group images by the commit year and month, you could use the following:
+
+```ini
+OutputDirectory = ~/.lolologist/{project}/{time:%%Y}/{time:%%m}
+```
+
+Possible substition parameters:
+
+| Parameter  | Type       | Description                                |
+| ---------- | :--------: | ------------------------------------------ |
+| `project`  | *string*   | The name of the git repository's directory |
+| `revision` | *string*   | A ten character ref sha                    |
+| `message`  | *string*   | The entire commit message.                 |
+| `time`     | *datetime* | The time of the commit.                    |
+
