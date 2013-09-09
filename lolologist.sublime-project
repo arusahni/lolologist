@@ -9,10 +9,11 @@
 	{
 		"pylinter":
 		{
-			"python_bin": "/home/aru/.virtualenvs/lololigist/bin/python",
+			"python_bin": "/home/aru/.virtualenvs/lolologist/bin/python",
 			"python_path":[
-				"/home/aru/.virtualenvs/lololigist/bin"
+				"/home/aru/.virtualenvs/lolologist/bin"
 			],
+			"pylint_path": "/home/aru/.virtualenvs/lolologist/lib/python2.7/site-packages/pylint/lint.py",
 		}
 	}
 }
