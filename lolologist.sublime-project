@@ -4,5 +4,15 @@
 		{
 			"path": "/home/aru/code/lolologist"
 		}
-	]
+	],
+	"settings":
+	{
+		"pylinter":
+		{
+			"python_bin": "/home/aru/.virtualenvs/lololigist/bin/python",
+			"python_path":[
+				"/home/aru/.virtualenvs/lololigist/bin"
+			],
+		}
+	}
 }
