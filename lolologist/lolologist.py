@@ -224,39 +224,42 @@ class Lolologist(object):
 
     def register(self, args): #pylint: disable=W0613
         """ Register lolologist with a git repo. """
-        print("Attempting to register with the repository '{}'".format(args.repository))
-        if not os.path.isdir(os.path.join(args.repository, '.git')):
+        try:
+            print("Attempting to register with the repository '{}'".format(args.repository))
+
+            repo = git.Repo(args.repository)
+            hooks_dir = os.path.join(repo.git_dir, 'hooks')
+            if not os.path.isdir(hooks_dir):
+                os.makedirs(hooks_dir)
+
+            hook_file = os.path.join(hooks_dir, 'post-commit')
+            if os.path.isfile(hook_file): #TODO: Handle multiple post-commit events in the future
+                raise LolologistError("There is already a post-commit hook registered for this repository.")
+
+            with open(hook_file, 'w') as script:
+                script.write(POST_COMMIT_FILE)
+
+            hook_perms = os.stat(hook_file)
+            os.chmod(hook_file, hook_perms.st_mode | stat.S_IEXEC)
+            print("Post-commit event successfully registered. Now, get commitin'!")
+        except git.InvalidGitRepositoryError:
             raise LolologistError("The path '{}' must contain a valid git repository".format(args.repository))
-        
-        hooks_dir = os.path.join(args.repository, '.git', 'hooks')
-        if not os.path.isdir(hooks_dir):
-            os.makedirs(hooks_dir)
-
-        hook_file = os.path.join(hooks_dir, 'post-commit')
-        if os.path.isfile(hook_file): #TODO: Handle multiple post-commit events in the future
-            raise LolologistError("There is already a post-commit hook registered for this repository.")
-
-        with open(hook_file, 'w') as script:
-            script.write(POST_COMMIT_FILE)
-
-        hook_perms = os.stat(hook_file)
-        os.chmod(hook_file, hook_perms.st_mode | stat.S_IEXEC)
-        print("Post-commit event successfully registered. Now, get commitin'!")
 
 
     def deregister(self, args): #pylint: disable=W0613
         """ Remove lolologist from a git repo. """
         print("Attempting to deregister from the repository '{}'".format(args.repository))
-        if not os.path.isdir(os.path.join(args.repository, '.git')):
-            raise LolologistError("The path '{}' must contain a valid git repository".format(args.repository))
-        
-        hooks_dir = os.path.join(args.repository, '.git', 'hooks')
-        hook_file = os.path.join(hooks_dir, 'post-commit')
-        if not os.path.isdir(hooks_dir) or not os.path.isfile(hook_file):
-            raise LolologistError("lolologist does not appear to be registered with this repository.")
+        try:
+            repo = git.Repo(args.repository)
+            hooks_dir = os.path.join(repo.git_dir, 'hooks')
+            hook_file = os.path.join(hooks_dir, 'post-commit')
+            if not os.path.isdir(hooks_dir) or not os.path.isfile(hook_file):
+                raise LolologistError("lolologist does not appear to be registered with this repository.")
 
-        os.remove(hook_file) #TODO: Ensure this is actually lolologist's
-        print("Post-commit event successfully deregistered. I haz a sad.")
+            os.remove(hook_file) #TODO: Ensure this is actually lolologist's
+            print("Post-commit event successfully deregistered. I haz a sad.")
+        except git.InvalidGitRepositoryError:
+            raise LolologistError("The path '{}' must contain a valid git repository".format(args.repository))
 
 
     def set_font(self, args):
@@ -268,7 +271,6 @@ class Lolologist(object):
         else:
             raise LolologistError("Could not find Impact. Falling back to League Gothic.")
 
-    
 
 def get_impact():
     """ Finds Impact.ttf on one's system and returns the best path for it. """
@@ -315,4 +317,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-    
