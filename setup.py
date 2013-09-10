@@ -1,14 +1,13 @@
 from setuptools import setup
 
 setup(name='lolologist',
-      version='0.2',
+      version='0.3.0',
       description='A utility that generates an image macro from your webcam whenever \
         you commit to a git repository.',
       classifiers=[
-        'Development Status :: 2 - Pre-Alpha',
+        'Development Status :: 3 - Alpha',
         'License :: OSI Approved :: Mozilla Public License 2.0 (MPL 2.0)',
         'Programming Language :: Python :: 2.6',
-        'Topic :: Text Processing :: Linguistic',
         'Environment :: Console',
         'Operating System :: POSIX :: Linux',
         'Topic :: Multimedia :: Graphics :: Capture',
@@ -20,7 +19,7 @@ setup(name='lolologist',
       author_email='arusahni@gmail.com',
       license='MPL 2.0',
       packages=['lolologist'],
-      package_data={'lolologist':['impact.ttf',]},
+      package_data={'lolologist':['LeagueGothic-Regular.otf',]},
       include_package_data=True,
       install_requires=[
         'argparse',

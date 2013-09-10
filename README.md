@@ -13,9 +13,13 @@ Installing
 
 If pillow is already installed and you do not have the packages above, you need to uninstall it and install those packages. This is because when pillow is installed, it compiles optional features based on the availability of those packages. You would do this with commands:
 
-    sudo pip uninstall pillow
-    sudo apt-get install python-dev libfreetype6-dev libjpeg-dev
+```bash
+sudo pip uninstall pillow
+sudo apt-get install python-dev libfreetype6-dev libjpeg-dev
 
+# Optional, for a better font
+sudo apt-get install ttf-mscorefonts-installer
+```
 In order to use lolologist, you must also install the following packages:
 * mplayer
 
@@ -43,3 +47,8 @@ Possible substition parameters:
 | `message`  | *string*   | The entire commit message.                 |
 | `time`     | *datetime* | The time of the commit.                    |
 
+Fonts
+-----
+Due to licensing concerns, I can't distribute Lolologist with the iconic Impact TrueType font.  To account for this, lolologist will use your system's Impact if it exists, or fall back to an open font.
+
+If Impact isn't installed on your system, [download and install it](http://www.cufonfonts.com/en/font/12047/impact), and then either run `lolologist setfont` or `lolologist setfont <path-to-font>` to load it.
