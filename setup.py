@@ -1,7 +1,7 @@
 from setuptools import setup
 
 setup(name='lolologist',
-      version='0.3.0',
+      version='0.3.1',
       description='A utility that generates an image macro from your webcam whenever \
         you commit to a git repository.',
       classifiers=[
@@ -24,7 +24,7 @@ setup(name='lolologist',
       install_requires=[
         'argparse',
         'GitPython>=0.3.2.RC1',
-        'Pillow',
+        'Pillow<=2.1.0',
         'configparser',
       ],
       entry_points = {
