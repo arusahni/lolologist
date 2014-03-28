@@ -22,6 +22,7 @@ from subprocess import call, check_output, STDOUT
 from contextlib import contextmanager
 from shutil import rmtree
 from datetime import datetime
+from lolz import Tranzlator
 
 try:
     from subprocess import DEVNULL
@@ -166,6 +167,12 @@ class Config(object): #pylint: disable=R0903
         return font
 
 
+    @property
+    def lol_speak(self):
+        """ Returns `True` if the lolspeak translator is enabled. """
+        return self.__parser.getboolean('LolSpeak', False)
+
+
     def update_config(self, setting, value):
         """ Sets a value for the specific setting in the DEFAULT section. """
         config = configparser.ConfigParser()
@@ -207,11 +214,13 @@ class Lolologist(object):
         """ Retrieves the data for the most recent commit. """
         repo = git.Repo(self.repo_path)
         head_ref = repo.head.reference.commit
+        t = Tranzlator()
+        translator = t.translate_sentence if self.config.lol_speak else lambda x: x
         return {
             "project" : os.path.basename(repo.working_dir),
             "revision" : head_ref.hexsha[0:10],
-            "summary" : head_ref.summary,
-            "message" : head_ref.message,
+            "summary" : translator(head_ref.summary),
+            "message" : translator(head_ref.message),
             "time" : datetime.fromtimestamp(head_ref.committed_date),
         }
 
@@ -271,6 +280,13 @@ class Lolologist(object):
         else:
             raise LolologistError("Could not find Impact. Falling back to League Gothic.")
 
+    def speak_lolz(self, args):
+        """ Sets the state of lolspeak for commits """
+        enabled = args.lol_on.lower() == "on" if args.lol_on else False
+        if (not self.config.lol_speak and args.lol_on.lower() == "on") or \
+                (self.config.lol_speak and args.lol_on.lower() == "off"):
+            self.config.update_config("LolSpeak", args.lol_on.lower())
+        print("Lolspeak {}!".format("enabled" if enabled else "disabled"))
 
 def get_impact():
     """ Finds Impact.ttf on one's system and returns the best path for it. """
@@ -307,6 +323,10 @@ def main():
         help="The full path to the desired font. If none is specified, attempt to find the system's Impact font."
     )
     setfont_parser.set_defaults(func=app.set_font)
+
+    tranzlator_parser = subparsers.add_parser('speaklolz', help="Translate commit summaries and messages to lolzspeak.")
+    tranzlator_parser.add_argument('lol_on', help="'on' to enable the translator, 'off' to disable it.")
+    tranzlator_parser.set_defaults(func=app.speak_lolz)
 
     args = parser.parse_args()
     try:

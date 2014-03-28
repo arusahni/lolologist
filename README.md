@@ -52,3 +52,7 @@ Fonts
 Due to licensing concerns, I can't distribute lolologist with the iconic Impact TrueType font.  To account for this, lolologist will use your system's Impact if it exists, or fall back to an open font.
 
 If Impact isn't installed on your system, [download and install it](http://www.cufonfonts.com/en/font/12047/impact), and then run either `lolologist setfont` or `lolologist setfont <path-to-font>` to load it.
+
+Acknowledgements
+----------------
+Thanks go out to Stephen Newey for his [PyLOLz module](https://code.google.com/p/pylolz/).
