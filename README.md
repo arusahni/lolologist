@@ -25,8 +25,6 @@ In order to use lolologist, you must also install the following packages:
 
 To install lolologist, after confirming that the above prerequisites are installed, run `sudo python setup.py install`
 
-**Note**: This library is not yet compatible with Pillow 2.2.0 and above due to an unannounced change to how they draw fonts. Apparently things will be fixed/standardized in their 2.3.0 release, but for now I'm forcing the version number.
-
 Using
 -----
 1. Within the root of your git repository, type `lolologist register`. This should add a githook that will trigger the program every time you commit.
