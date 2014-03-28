@@ -83,20 +83,20 @@ class ImageMacro(object):
         bottom_font_size = 48
 
         top_dimensions = self.__get_text_dimensions(self.top_text, top_font_size)
-        top_position = (self.size[0] - 5 - top_dimensions[0], 5)
+        top_position = (self.size[0] - 5 - top_dimensions[0], 3)
 
         draw = ImageDraw.Draw(image)
         self.__draw_image(draw, self.top_text, top_font_size, top_position)
-        
+
         lines = min(len(self.bottom_text), MAX_LINES)
 
         for row in range(lines):
-            bottom_offset = ((lines - 1 - row) * bottom_font_size) + 5
+            bottom_offset = ((lines - 1 - row) * bottom_font_size) + 15
             bottom_dimensions = self.__get_text_dimensions(self.bottom_text[row], bottom_font_size)
             bottom_position = (self.size[0]/2 - bottom_dimensions[0]/2,
                                 self.size[1] - bottom_offset - bottom_dimensions[1])
             self.__draw_image(draw, self.bottom_text[row], bottom_font_size, bottom_position)
-        
+
         return image
 
 
