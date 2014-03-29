@@ -34,7 +34,7 @@ except ImportError:
 MAX_LINES = 3
 STROKE_COLOR = (0, 0, 0)
 TEXT_COLOR = (255, 255, 255)
-FALLBACK_FONT = "LeagueGothic-Regular.otf"
+FALLBACK_FONT = "LeagueGothic-Regular.otf" # Change in setup.py, too
 DEFAULT_UPLOAD_URL = 'http://uploads.im/api?upload'
 
 POST_COMMIT_FILE = """#!/bin/sh

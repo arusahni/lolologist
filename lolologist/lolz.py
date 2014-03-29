@@ -15,7 +15,7 @@
 
 import json, sys, os.path, re
 
-DEFAULT_LOLZ_DB = os.path.join(os.path.split(__file__)[0], 'tranzlator.json')
+DEFAULT_LOLZ_DB = os.path.join(os.path.split(__file__)[0], 'tranzlator.json') # Change in setup.py, too
 
 class Tranzlator(object):
     """

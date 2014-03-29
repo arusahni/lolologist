@@ -19,7 +19,7 @@ setup(name='lolologist',
       author_email='arusahni@gmail.com',
       license='MPL 2.0',
       packages=['lolologist'],
-      package_data={'lolologist':['LeagueGothic-Regular.otf',]},
+      package_data={'lolologist':['LeagueGothic-Regular.otf', 'tranzlator.json']},
       include_package_data=True,
       install_requires=[
         'argparse',
