@@ -24,6 +24,8 @@ from shutil import rmtree
 from datetime import datetime
 from lolz import Tranzlator
 
+from utils import LolologistError, upload
+
 try:
     from subprocess import DEVNULL
 except ImportError:
@@ -33,15 +35,11 @@ MAX_LINES = 3
 STROKE_COLOR = (0, 0, 0)
 TEXT_COLOR = (255, 255, 255)
 FALLBACK_FONT = "LeagueGothic-Regular.otf"
+DEFAULT_UPLOAD_URL = 'http://uploads.im/api?upload'
 
 POST_COMMIT_FILE = """#!/bin/sh
 lolologist capture
 """
-
-class LolologistError(Exception):
-    """ Custom error types """
-    pass
-
 
 class CameraSnapper(object): #pylint: disable=R0903
     """ A picture source """
@@ -185,6 +183,30 @@ class Config(object): #pylint: disable=R0903
         self.__parser = config[self.__section]
 
 
+    def clear_setting(self, setting):
+        """ Removes a setting from the DEFAULT section. """
+        config = configparser.ConfigParser()
+        config.read(self.config_file)
+        config.remove_option('DEFAULT', setting)
+
+        with open(self.config_file, 'w') as config_file:
+            config.write(config_file)
+
+        self.__parser = config[self.__section]
+
+
+    @property
+    def upload(self):
+        """ Determines if the uploader should be triggered. """
+        return self.__parser.getboolean('UploadImages', False) and len(self.upload_url) > 0
+
+
+    @property
+    def upload_url(self):
+        """ The URL to upload to. """
+        return self.__parser.get('UploadUrl', DEFAULT_UPLOAD_URL)
+
+
 class Lolologist(object):
     """ The main application """
 
@@ -228,7 +250,11 @@ class Lolologist(object):
     def capture(self, args): #pylint: disable=W0613
         """ Capture the most recent commit and macro it! """
         commit = self.__get_newest_commit()
-        print(self.__make_macro(**commit))
+        image = self.__make_macro(**commit)
+        if self.config.upload:
+            url = upload(self.config.upload_url, image)
+            print("Uploaded:", url)
+        print("Macro saved:", image)
 
 
     def register(self, args): #pylint: disable=W0613
@@ -280,6 +306,7 @@ class Lolologist(object):
         else:
             raise LolologistError("Could not find Impact. Falling back to League Gothic.")
 
+
     def speak_lolz(self, args):
         """ Sets the state of lolspeak for commits """
         enabled = args.lol_on.lower() == "on" if args.lol_on else False
@@ -287,6 +314,18 @@ class Lolologist(object):
                 (self.config.lol_speak and args.lol_on.lower() == "off"):
             self.config.update_config("LolSpeak", args.lol_on.lower())
         print("Lolspeak {}!".format("enabled" if enabled else "disabled"))
+
+
+    def set_uploader(self, args):
+        """ Sets the state of the uploader, as well as the URL endpoint."""
+        action = args.action.lower()
+        if action == "on" or action == "off":
+            self.config.update_config("UploadImages", action)
+        if action == "clear":
+            self.config.clear_setting("UploadUrl")
+        elif args.url:
+            self.config.update_config("UploadUrl", args.url)
+
 
 def get_impact():
     """ Finds Impact.ttf on one's system and returns the best path for it. """
@@ -327,6 +366,11 @@ def main():
     tranzlator_parser = subparsers.add_parser('speaklolz', help="Translate commit summaries and messages to lolzspeak.")
     tranzlator_parser.add_argument('lol_on', help="'on' to enable the translator, 'off' to disable it.")
     tranzlator_parser.set_defaults(func=app.speak_lolz)
+
+    uploader_parser = subparsers.add_parser('uploader', help="Set file uploading preferences.")
+    uploader_parser.add_argument('action', choices=['on', 'off', 'set', 'clear'], help="'on' to enable the uploader, 'off' to disable it, 'set' to set the url, 'clear' to clear the URL.")
+    uploader_parser.add_argument('url', nargs='?', default=None, help="The URL to POST the image to.")
+    uploader_parser.set_defaults(func=app.set_uploader)
 
     args = parser.parse_args()
     try:

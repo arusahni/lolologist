@@ -25,6 +25,7 @@ setup(name='lolologist',
         'argparse',
         'GitPython>=0.3.2.RC1',
         'Pillow>=2.3.0',
+        'requests',
         'configparser',
       ],
       entry_points = {
