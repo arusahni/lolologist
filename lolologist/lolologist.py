@@ -16,15 +16,15 @@ lolologist - an automated image macro generator for your commits. Simply tack it
 from __future__ import unicode_literals, print_function
 
 import configparser
-import argparse, os, textwrap, git, sys, stat
+import argparse, os, textwrap, sys
 from PIL import Image, ImageFont, ImageDraw
 from subprocess import call, check_output, STDOUT
 from contextlib import contextmanager
 from shutil import rmtree
-from datetime import datetime
 from lolz import Tranzlator
 
 from utils import LolologistError, upload
+from repository import GitRepository
 
 try:
     from subprocess import DEVNULL
@@ -234,17 +234,9 @@ class Lolologist(object):
 
     def __get_newest_commit(self):
         """ Retrieves the data for the most recent commit. """
-        repo = git.Repo(self.repo_path)
-        head_ref = repo.head.reference.commit
-        t = Tranzlator()
-        translator = t.translate_sentence if self.config.lol_speak else lambda x: x
-        return {
-            "project" : os.path.basename(repo.working_dir),
-            "revision" : head_ref.hexsha[0:10],
-            "summary" : translator(head_ref.summary),
-            "message" : translator(head_ref.message),
-            "time" : datetime.fromtimestamp(head_ref.committed_date),
-        }
+        loltranz = Tranzlator()
+        translator = loltranz.translate_sentence if self.config.lol_speak else None
+        return GitRepository(self.repo_path).get_newest_commit(translator=translator)
 
 
     def capture(self, args): #pylint: disable=W0613
@@ -257,44 +249,19 @@ class Lolologist(object):
         print("Macro saved:", image)
 
 
-    def register(self, args): #pylint: disable=W0613
+    @staticmethod
+    def register(args): #pylint: disable=W0613
         """ Register lolologist with a git repo. """
-        try:
-            print("Attempting to register with the repository '{}'".format(args.repository))
-
-            repo = git.Repo(args.repository)
-            hooks_dir = os.path.join(repo.git_dir, 'hooks')
-            if not os.path.isdir(hooks_dir):
-                os.makedirs(hooks_dir)
-
-            hook_file = os.path.join(hooks_dir, 'post-commit')
-            if os.path.isfile(hook_file): #TODO: Handle multiple post-commit events in the future
-                raise LolologistError("There is already a post-commit hook registered for this repository.")
-
-            with open(hook_file, 'w') as script:
-                script.write(POST_COMMIT_FILE)
-
-            hook_perms = os.stat(hook_file)
-            os.chmod(hook_file, hook_perms.st_mode | stat.S_IEXEC)
-            print("Post-commit event successfully registered. Now, get commitin'!")
-        except git.InvalidGitRepositoryError:
-            raise LolologistError("The path '{}' must contain a valid git repository".format(args.repository))
+        print("Attempting to register with the repository '{}'".format(args.repository))
+        GitRepository(args.repository).register(POST_COMMIT_FILE)
 
 
-    def deregister(self, args): #pylint: disable=W0613
+    @staticmethod
+    def deregister(args): #pylint: disable=W0613
         """ Remove lolologist from a git repo. """
         print("Attempting to deregister from the repository '{}'".format(args.repository))
-        try:
-            repo = git.Repo(args.repository)
-            hooks_dir = os.path.join(repo.git_dir, 'hooks')
-            hook_file = os.path.join(hooks_dir, 'post-commit')
-            if not os.path.isdir(hooks_dir) or not os.path.isfile(hook_file):
-                raise LolologistError("lolologist does not appear to be registered with this repository.")
-
-            os.remove(hook_file) #TODO: Ensure this is actually lolologist's
-            print("Post-commit event successfully deregistered. I haz a sad.")
-        except git.InvalidGitRepositoryError:
-            raise LolologistError("The path '{}' must contain a valid git repository".format(args.repository))
+        GitRepository(args.repository).deregister()
+        print("Post-commit event successfully deregistered. I haz a sad.")
 
 
     def set_font(self, args):
@@ -351,11 +318,11 @@ def main():
 
     register_parser = subparsers.add_parser('register', help="Register lolologist with a git repository")
     register_parser.add_argument('repository', nargs='?', default='.', help="The repository to register")
-    register_parser.set_defaults(func=app.register)
+    register_parser.set_defaults(func=Lolologist.register)
 
     deregister_parser = subparsers.add_parser('deregister', help="Deregister lolologist from a git repository")
     deregister_parser.add_argument('repository', nargs='?', default='.', help="The repository to deregister")
-    deregister_parser.set_defaults(func=app.deregister)
+    deregister_parser.set_defaults(func=Lolologist.deregister)
 
     setfont_parser = subparsers.add_parser('setfont', help="Set the font to use for image macros.")
     setfont_parser.add_argument('font_path', nargs="?",
