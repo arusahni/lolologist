@@ -27,9 +27,9 @@ class GitRepository(object):
         except git.InvalidGitRepositoryError:
             raise LolologistError("The path '{}' must contain a valid git repository.".format(repository))
 
-    def register(self, hook_text):
-        """ Registers the githooks """
-        hooks_dir = os.path.join(self.repo.git_dir, 'hooks')
+    def __add_hook(self, base_dir_path, hook_text):
+        """ Adds the githook to a git module. """
+        hooks_dir = os.path.join(base_dir_path, 'hooks')
         if not os.path.isdir(hooks_dir):
             os.makedirs(hooks_dir)
 
@@ -42,6 +42,19 @@ class GitRepository(object):
 
         hook_perms = os.stat(hook_file)
         os.chmod(hook_file, hook_perms.st_mode | stat.S_IEXEC)
+
+
+    def register(self, hook_text):
+        """ Registers the githooks """
+        print("Adding hook to main repository.")
+        self.__add_hook(self.repo.git_dir, hook_text)
+
+        modules_dir = os.path.join(self.repo.git_dir, 'modules')
+        if os.path.isdir(modules_dir):
+            for submodule in self.repo.submodules:
+                print("Adding hook to subrepository: ", submodule.path)
+                self.__add_hook(os.path.join(modules_dir, submodule.path), hook_text)
+            
         return True
 
 
