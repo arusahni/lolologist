@@ -23,6 +23,7 @@ from contextlib import contextmanager
 from shutil import rmtree
 from lolz import Tranzlator
 
+from cameras import MplayerCamera, ImageSnapCamera
 from utils import LolologistError, upload
 from repository import GitRepository
 
@@ -69,85 +70,6 @@ def is_osx():
 
     """
     return CURRENT_PLATFORM == PLATFORM_OSX
-
-
-class Camera(object):
-
-    """A base camera object"""
-
-    def __init__(self, warmup_time, directory='/tmp/lolologist/'):
-        """A base implementation of the webcam, not directly callable
-
-        :param warmup_time: @todo
-        :param directory: @todo
-
-        """
-        self._warmup_time = warmup_time
-        self._output_directory = directory
-        
-    @contextmanager
-    def capture_photo(self):
-        """Captures a photo from the camera and provides its path for further processing
-        
-        :returns: @todo
-
-        """
-        try:
-            self._setup()
-            yield self._capture()
-        finally:
-            self._cleanup()
-
-    def _capture(self):
-        raise NotImplementedError("Override this.")
-
-    def _setup(self):
-        os.makedirs(self._output_directory)
-
-    def _cleanup(self):
-        """Cleans the camera up after itself like a big boy
-        
-        :returns: @todo
-
-        """
-        if os.path.exists(self._output_directory):
-            rmtree(self._output_directory)
-
-
-class MplayerCamera(Camera): #pylint: disable=R0903
-    """ A picture source """
-    def __init__(self, warmup_time=7):
-        """ Initializes a new webcam instance """
-        super(MplayerCamera, self).__init__(warmup_time)
-
-    def _capture(self):
-        """ Captures a photo and provides it for further processing. """
-        call(['mplayer', 'tv://', '-vo', 'jpeg:outdir={}'.format(self._output_directory), '-frames',
-              str(self._warmup_time)], stdout=DEVNULL, stderr=STDOUT)
-        return os.path.join(self._output_directory, '{0:08d}.jpg'.format(self._warmup_time)) #get the last captured frame
-
-
-class ImageSnapCamera(Camera):
-
-    """Uses imagesnap to capture a photo"""
-
-    def __init__(self, warmup_time=1.2):
-        """Initializes a new webcam instance
-
-        :param warmup_time: @todo
-
-        """
-        super(ImageSnapCamera, self).__init__(warmup_time)
-        
-    def _capture(self):
-        """Captures a photo using imagesnap and provides the path for further processing
-
-        :returns: the full path of the captured image
-
-        """
-        outpath = os.path.join(self._output_directory, 'snapshot.jpg')
-        call(['imagesnap', '-w', str(self._warmup_time), '-q', outpath], stdout=DEVNULL, stderr=STDOUT)
-        return outpath
 
 
 class ImageMacro(object):
@@ -307,8 +229,10 @@ class Lolologist(object):
 
     def __make_macro(self, revision, summary, **kwargs):
         """ Creates an image macro with the given text. """
-        # camera = CameraSnapper()
-        camera = ImageSnapCamera()
+        if is_osx():
+            camera = ImageSnapCamera()
+        else:
+            camera = MplayerCamera()
         with camera.capture_photo() as photo:
             macro = ImageMacro(photo, revision, summary, self.config.get_font())
             image = macro.render()
