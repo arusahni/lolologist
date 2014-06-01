@@ -37,28 +37,117 @@ TEXT_COLOR = (255, 255, 255)
 FALLBACK_FONT = "LeagueGothic-Regular.otf" # Change in setup.py, too
 DEFAULT_UPLOAD_URL = 'http://uploads.im/api?upload'
 
+CURRENT_PLATFORM = 0
+PLATFORM_LINUX = 1
+PLATFORM_OSX = 2
+
 POST_COMMIT_FILE = """#!/bin/sh
 lolologist capture
 """
 
-class CameraSnapper(object): #pylint: disable=R0903
-    """ A picture source """
-    def __init__(self, warm_up_time=7, directory='/tmp/lolologist/'):
-        """ Initializes a new webcam instance """
-        self.temp_directory = directory
-        self.frame_offset = warm_up_time
+def detect_platform():
+    global CURRENT_PLATFORM
+    if sys.platform.startswith("linux"):
+        CURRENT_PLATFORM = PLATFORM_LINUX
+    elif sys.platform == 'darwin':
+        CURRENT_PLATFORM = PLATFORM_OSX
+    else:
+        print("Unsupported platform detected. Assuming Linux.", file=sys.stderr)
+        CURRENT_PLATFORM = PLATFORM_LINUX
+
+def is_linux():
+    """Determines if the current platform is Linux
+    :returns: @todo
+
+    """
+    return CURRENT_PLATFORM == PLATFORM_LINUX
+
+def is_osx():
+    """Determines if the current platform is OSX
+    
+    :returns: @todo
+
+    """
+    return CURRENT_PLATFORM == PLATFORM_OSX
 
 
+class Camera(object):
+
+    """A base camera object"""
+
+    def __init__(self, warmup_time, directory='/tmp/lolologist/'):
+        """A base implementation of the webcam, not directly callable
+
+        :param warmup_time: @todo
+        :param directory: @todo
+
+        """
+        self._warmup_time = warmup_time
+        self._output_directory = directory
+        
     @contextmanager
     def capture_photo(self):
-        """ Captures a photo and provides it for further processing. """
+        """Captures a photo from the camera and provides its path for further processing
+        
+        :returns: @todo
+
+        """
         try:
-            call(['mplayer', 'tv://', '-vo', 'jpeg:outdir={}'.format(self.temp_directory), '-frames',
-                str(self.frame_offset)], stdout=DEVNULL, stderr=STDOUT)
-            yield os.path.join(self.temp_directory, '{0:08d}.jpg'.format(self.frame_offset))
+            self._setup()
+            yield self._capture()
         finally:
-            if os.path.exists(self.temp_directory):
-                rmtree(self.temp_directory)
+            self._cleanup()
+
+    def _capture(self):
+        raise NotImplementedError("Override this.")
+
+    def _setup(self):
+        os.makedirs(self._output_directory)
+
+    def _cleanup(self):
+        """Cleans the camera up after itself like a big boy
+        
+        :returns: @todo
+
+        """
+        if os.path.exists(self._output_directory):
+            rmtree(self._output_directory)
+
+
+class MplayerCamera(Camera): #pylint: disable=R0903
+    """ A picture source """
+    def __init__(self, warmup_time=7):
+        """ Initializes a new webcam instance """
+        super(MplayerCamera, self).__init__(warmup_time)
+
+    def _capture(self):
+        """ Captures a photo and provides it for further processing. """
+        call(['mplayer', 'tv://', '-vo', 'jpeg:outdir={}'.format(self._output_directory), '-frames',
+              str(self._warmup_time)], stdout=DEVNULL, stderr=STDOUT)
+        return os.path.join(self._output_directory, '{0:08d}.jpg'.format(self._warmup_time)) #get the last captured frame
+
+
+class ImageSnapCamera(Camera):
+
+    """Uses imagesnap to capture a photo"""
+
+    def __init__(self, warmup_time=1.2):
+        """Initializes a new webcam instance
+
+        :param warmup_time: @todo
+
+        """
+        super(ImageSnapCamera, self).__init__(warmup_time)
+        
+    def _capture(self):
+        """Captures a photo using imagesnap and provides the path for further processing
+
+        :returns: the full path of the captured image
+
+        """
+        outpath = os.path.join(self._output_directory, 'snapshot.jpg')
+        call(['imagesnap', '-w', str(self._warmup_time), '-q', outpath], stdout=DEVNULL, stderr=STDOUT)
+        return outpath
 
 
 class ImageMacro(object):
@@ -93,7 +182,7 @@ class ImageMacro(object):
             bottom_offset = ((lines - 1 - row) * bottom_font_size) + 15
             bottom_dimensions = self.__get_text_dimensions(self.bottom_text[row], bottom_font_size)
             bottom_position = (self.size[0]/2 - bottom_dimensions[0]/2,
-                                self.size[1] - bottom_offset - bottom_dimensions[1])
+                    self.size[1] - bottom_offset - bottom_dimensions[1])
             self.__draw_image(draw, self.bottom_text[row], bottom_font_size, bottom_position)
 
         return image
@@ -211,13 +300,15 @@ class Lolologist(object):
     """ The main application """
 
     def __init__(self, repo_path='.'):
+        detect_platform()
         self.config = Config()
         self.repo_path = repo_path
 
 
     def __make_macro(self, revision, summary, **kwargs):
         """ Creates an image macro with the given text. """
-        camera = CameraSnapper()
+        # camera = CameraSnapper()
+        camera = ImageSnapCamera()
         with camera.capture_photo() as photo:
             macro = ImageMacro(photo, revision, summary, self.config.get_font())
             image = macro.render()
@@ -294,18 +385,24 @@ class Lolologist(object):
             self.config.update_config("UploadUrl", args.url)
 
 
+def get_impact_locations():
+    """ Gets the location of the Impact font for the current operating system
+    """
+    if is_osx():
+        return check_output(['locate', '-i', 'Impact.ttf'], stderr=STDOUT)
+    return check_output(['locate', '--regex', '-i', 'Impact.ttf$'], stderr=STDOUT)
+
 def get_impact():
     """ Finds Impact.ttf on one's system and returns the best path for it. """
-    locs = check_output(['locate', '--regex', '-i', 'Impact.ttf$'], stderr=STDOUT)
+    locs = get_impact_locations()
     font_path = None
     for loc in locs.splitlines():
-        if loc.startswith("/usr"): #most likely a permanent font
+        if loc.startswith("/usr") or loc.startswith('/Library'): #most likely a permanent font
             font_path = loc
             break
         elif font_path is None:
             font_path = loc
     return font_path
-
 
 def main():
     """ Entry point for the application """

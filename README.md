@@ -5,11 +5,15 @@ A python-based tool that generates an image macro from your webcam whenever you 
 
 Installing
 ------------
+
+### Linux
+
 *BEFORE* installing lolologist, make sure that the following packages are installed locally:
 
 * python-dev
 * libfreetype6-dev
 * libjpeg-dev
+* mplayer
 
 If pillow is already installed and you do not have the packages above, you need to uninstall it and install those packages. This is because when pillow is installed, it compiles optional features based on the availability of those packages. You would do this with commands:
 
@@ -20,10 +24,24 @@ sudo apt-get install python-dev libfreetype6-dev libjpeg-dev
 # Optional, for a better font
 sudo apt-get install ttf-mscorefonts-installer
 ```
-In order to use lolologist, you must also install the following packages:
-* mplayer
 
-To install lolologist, after confirming that the above prerequisites are installed, run `sudo python setup.py install`
+To install lolologist, after confirming that the above prerequisites are installed, run `sudo python setup.py install`, or install via pip.
+
+### OS X (experimental)
+
+*BEFORE* installing lolologist, make sure that the following Homebrew packages (or their equivalents) are installed locally.
+
+* freetype
+* jpeg
+* imagesnap
+
+Also, allow the locate daemon to run. This is necessary for font detection.
+
+```bash
+sudo launchctl load -w /System/Library/LaunchDaemons/com.apple.locate.plist
+```
+
+To install lolologist, after confirming that the above prerequisites are installed, run `sudo python setup.py install`, or install via pip.
 
 Using
 -----
