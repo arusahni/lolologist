@@ -32,6 +32,10 @@ try:
 except ImportError:
     DEVNULL = open(os.devnull, 'wb')
 
+# Maximum width and height of the rendered image (in pixels). These MUST be floats.
+MAX_WIDTH = 640.0
+MAX_HEIGHT = 480.0
+
 MAX_LINES = 3
 STROKE_COLOR = (0, 0, 0)
 TEXT_COLOR = (255, 255, 255)
@@ -88,6 +92,12 @@ class ImageMacro(object):
     def render(self):
         """ Returns the rendered macro. """
         image = Image.open(self.image_path)
+
+        # If the image is bigger than desired, scale it down (maintain the aspect ratio)
+        if image.size[0] > MAX_WIDTH or image.size[1] > MAX_HEIGHT:
+            scaling_ratio = min(MAX_WIDTH/image.size[0], MAX_HEIGHT/image.size[1])
+            image.thumbnail((scaling_ratio * image.size[0], scaling_ratio * image.size[1]), Image.ANTIALIAS)
+
         self.size = image.size
         top_font_size = 32
         bottom_font_size = 48
