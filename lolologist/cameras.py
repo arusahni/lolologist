@@ -3,8 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # pylint: disable=I0011
 
-""" 
-Camera interfaces for lolologist.
+"""Camera interfaces for lolologist.
 
     Aru Sahni <arusahni@gmail.com>
 """
@@ -18,7 +17,7 @@ from shutil import rmtree
 from subprocess import call, STDOUT
 
 try:
-    from subprocess import DEVNULL # pylint disable=no-name-in-module
+    from subprocess import DEVNULL # pylint:disable=no-name-in-module
 except ImportError:
     DEVNULL = open(os.devnull, 'wb')
 
@@ -28,18 +27,18 @@ class Camera(object):
     def __init__(self, warmup_time, directory='/tmp/lolologist/'):
         """A base implementation of the webcam, not directly callable
 
-        :param warmup_time: @todo
-        :param directory: @todo
+        :param warmup_time: The amount of time the camera should be permitted to warm up before shooting
+        :param directory: The directory to output captured images to
 
         """
         self._warmup_time = warmup_time
         self._output_directory = directory
-        
+
     @contextmanager
     def capture_photo(self):
         """Captures a photo from the camera and provides its path for further processing
-        
-        :returns: @todo
+
+        :returns: The path to the captured image
 
         """
         try:
@@ -49,16 +48,15 @@ class Camera(object):
             self._cleanup()
 
     def _capture(self):
+        """Capture the photo"""
         raise NotImplementedError("Override this.")
 
     def _setup(self):
+        """Performs any necessary setup ops."""
         os.makedirs(self._output_directory)
 
     def _cleanup(self):
         """Cleans the camera up after itself like a big boy
-        
-        :returns: @todo
-
         """
         if os.path.exists(self._output_directory):
             rmtree(self._output_directory)
@@ -67,28 +65,32 @@ class Camera(object):
 class MplayerCamera(Camera): #pylint: disable=R0903
     """ A picture source """
     def __init__(self, warmup_time=7):
-        """ Initializes a new webcam instance """
+        """ Initializes a new webcam instance
+
+        :param warmup_time: The number of frames to capture before capturing one for realsies
+
+        """
         super(MplayerCamera, self).__init__(warmup_time)
 
     def _capture(self):
         """ Captures a photo and provides it for further processing. """
         call(['mplayer', 'tv://', '-vo', 'jpeg:outdir={}'.format(self._output_directory), '-frames',
               str(self._warmup_time)], stdout=DEVNULL, stderr=STDOUT)
-        return os.path.join(self._output_directory, '{0:08d}.jpg'.format(self._warmup_time)) #get the last captured frame
+        #get the last captured frame
+        return os.path.join(self._output_directory, '{0:08d}.jpg'.format(self._warmup_time))
 
 
 class ImageSnapCamera(Camera):
-
     """Uses imagesnap to capture a photo"""
 
     def __init__(self, warmup_time=1.2):
         """Initializes a new webcam instance
 
-        :param warmup_time: @todo
+        :param warmup_time: The warmup time
 
         """
         super(ImageSnapCamera, self).__init__(warmup_time)
-        
+
     def _capture(self):
         """Captures a photo using imagesnap and provides the path for further processing
 

@@ -54,7 +54,7 @@ class Tranzlator(object):
         self.heuristics = heuristics
         self.cached = {}
         try:
-            f = open(db,'r')
+            f = open(db, 'r')
         except:
             raise IOError("Unable to open lolz database: %s" % db)
         try:
