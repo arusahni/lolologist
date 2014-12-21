@@ -12,6 +12,7 @@
 # http://www.mozilla.org/MPL/MPL-1.1.html
 #
 #
+from __future__ import print_function
 
 import json, sys, os.path, re
 
@@ -124,6 +125,6 @@ if __name__ == '__main__':
             _test()
         else:
             tranz = Tranzlator()
-            print tranz.translate_sentence(' '.join(sys.argv[1:]))
+            print(tranz.translate_sentence(' '.join(sys.argv[1:])))
     else:
-        print "Usage: %s text to tranzlate" % sys.argv[0]
+        print("Usage: %s text to tranzlate" % sys.argv[0])
