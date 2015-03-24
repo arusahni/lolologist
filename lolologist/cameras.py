@@ -3,7 +3,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # pylint: disable=I0011
 
-""" 
+"""
 Camera interfaces for lolologist.
 
     Aru Sahni <arusahni@gmail.com>
@@ -25,20 +25,22 @@ except ImportError:
 class Camera(object):
     """A base camera object"""
 
-    def __init__(self, warmup_time, directory='/tmp/lolologist/'):
+    def __init__(self, warmup_time, directory='/tmp/lolologist/', device=None):
         """A base implementation of the webcam, not directly callable
 
-        :param warmup_time: @todo
-        :param directory: @todo
+        :param warmup_time: How long to wait until the image gets captured
+        :param directory: The temp directory to write to
+        :param device: The camera device to use
 
         """
         self._warmup_time = warmup_time
         self._output_directory = directory
-        
+        self._device = device
+
     @contextmanager
     def capture_photo(self):
         """Captures a photo from the camera and provides its path for further processing
-        
+
         :returns: @todo
 
         """
@@ -56,7 +58,7 @@ class Camera(object):
 
     def _cleanup(self):
         """Cleans the camera up after itself like a big boy
-        
+
         :returns: @todo
 
         """
@@ -81,14 +83,14 @@ class ImageSnapCamera(Camera):
 
     """Uses imagesnap to capture a photo"""
 
-    def __init__(self, warmup_time=1.2):
+    def __init__(self, warmup_time=1.2, **kwargs):
         """Initializes a new webcam instance
 
         :param warmup_time: @todo
 
         """
-        super(ImageSnapCamera, self).__init__(warmup_time)
-        
+        super(ImageSnapCamera, self).__init__(warmup_time, **kwargs)
+
     def _capture(self):
         """Captures a photo using imagesnap and provides the path for further processing
 
@@ -96,6 +98,10 @@ class ImageSnapCamera(Camera):
 
         """
         outpath = os.path.join(self._output_directory, 'snapshot.jpg')
-        call(['imagesnap', '-w', str(self._warmup_time), '-q', outpath], stdout=DEVNULL, stderr=STDOUT)
+        params = ['imagesnap', '-w', str(self._warmup_time), '-q', outpath]
+        if self._device:
+            params.insert(-1, "-d")
+            params.insert(-1, self._device)
+        call(params, stdout=DEVNULL, stderr=STDOUT)
         return outpath
 
