@@ -27,7 +27,7 @@ sudo apt-get install ttf-mscorefonts-installer
 
 To install lolologist, after confirming that the above prerequisites are installed, run `sudo python setup.py install`, or install via pip.
 
-### OS X (experimental)
+### OS X
 
 *BEFORE* installing lolologist, make sure that the following Homebrew packages (or their equivalents) are installed locally.
 
