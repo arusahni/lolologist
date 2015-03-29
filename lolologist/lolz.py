@@ -2,7 +2,7 @@
 #
 # LOLspeak translator library
 # Created by Stephen Newey
-# Modified w/JSON support by Aru Sahni <arusahni@gmail.com>
+# Modified w/JSON & Python 3 support by Aru Sahni <arusahni@gmail.com>
 #
 # Python stuff, copyright (c)2008 Stephen Newey
 # Inspired by Dave Dribin's Ruby library lolspeak (http://www.dribin.org/dave/lolspeak/)
@@ -70,17 +70,17 @@ class Tranzlator(object):
         word = word.replace('ph', 'f')
 
         # fastest, check the cache...
-        if self.cached.has_key(word):
+        if word in self.cached:
             return self.cached[word]
 
         # easiest first, look in dictionary
-        if self.db.has_key(word):
+        if word in self.db:
             return self.db[word]
 
         # not found, perhaps a possesive apostrophy or the like?
         if self.regex['apostrophy'].search(word):
             result = self.regex['apostrophy'].search(word).groupdict()
-            if self.db.has_key(result['prefix']):
+            if result['prefix'] in self.db:
                 self.cached[word] = '%s%s' % (self.db[result['prefix']], result['suffix'])
                 return self.cached[word]
 
