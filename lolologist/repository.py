@@ -16,7 +16,7 @@ import os
 import os.path
 import stat
 
-from utils import LolologistError
+from .utils import LolologistError
 
 class GitRepository(object):
     """ A git repository """
@@ -54,7 +54,7 @@ class GitRepository(object):
             for submodule in self.repo.submodules:
                 print("Adding hook to subrepository: ", submodule.path)
                 self.__add_hook(os.path.join(modules_dir, submodule.path), hook_text)
-            
+
         return True
 
 

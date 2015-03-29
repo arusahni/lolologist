@@ -19,11 +19,12 @@ import configparser
 import argparse, os, textwrap, sys, logging
 from PIL import Image, ImageFont, ImageDraw
 from subprocess import check_output, STDOUT
-from lolz import Tranzlator
 
-from cameras import MplayerCamera, ImageSnapCamera
-from utils import LolologistError, upload
-from repository import GitRepository
+from .lolz import Tranzlator
+
+from .cameras import MplayerCamera, ImageSnapCamera
+from .utils import LolologistError, upload
+from .repository import GitRepository
 
 try:
     from subprocess import DEVNULL
