@@ -180,6 +180,13 @@ class Config(object): #pylint: disable=R0903
             LOG.warning("No font found. Using fallback. Run `lolologist setfont --help` for more information.")
         return font
 
+    def get_camera(self):
+        """Gets the configuration entry for the active camera device
+
+        :returns: The configured camera. `None` if one isn't configured
+
+        """
+        return self.__parser.get("Camera")
 
     @property
     def lol_speak(self):
@@ -238,7 +245,7 @@ class Lolologist(object):
 
         """
         if is_osx():
-            camera = ImageSnapCamera()
+            camera = ImageSnapCamera(device=self.config.get_camera())
         else:
             camera = MplayerCamera()
         with camera.capture_photo() as photo:
