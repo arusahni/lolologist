@@ -17,7 +17,7 @@ Installing
 
 If pillow is already installed and you do not have the packages above, you need to uninstall it and install those packages. This is because when pillow is installed, it compiles optional features based on the availability of those packages. You would do this with commands:
 
-```bash
+```console
 sudo pip uninstall pillow
 sudo apt-get install python-dev libfreetype6-dev libjpeg-dev
 
@@ -37,7 +37,7 @@ To install lolologist, after confirming that the above prerequisites are install
 
 Also, allow the locate daemon to run. This is necessary for font detection.
 
-```bash
+```console
 sudo launchctl load -w /System/Library/LaunchDaemons/com.apple.locate.plist
 ```
 
