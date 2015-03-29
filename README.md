@@ -71,6 +71,9 @@ Due to licensing concerns, I can't distribute lolologist with the iconic Impact 
 
 If Impact isn't installed on your system, [download and install it](http://www.cufonfonts.com/en/font/12047/impact), and then run either `lolologist setfont` or `lolologist setfont <path-to-font>` to load it.
 
+=======
 Acknowledgements
 ----------------
 Thanks go out to Stephen Newey for his [PyLOLz module](https://code.google.com/p/pylolz/).
+
+![Analytics](https://ga-beacon.appspot.com/UA-46766795-1/lolologist/README?pixel)
