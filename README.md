@@ -48,7 +48,30 @@ Using
 1. Within the root of your git repository, type `lolologist register`. This should add a githook that will trigger the program every time you commit.
 2. Commit!
 
-The path to your photo will be printed in the commit output.  To configure this, please edit the `~/.lolologistrc` file.  Pythonic format strings are accepted, with the caveat that *percent signs have to be escaped with another percent sign*.
+The path to your photo will be printed in the commit output.  The path is configurable - see the `Output*` options in the configuration section below.
+
+Fonts
+-----
+Due to licensing concerns, I can't distribute lolologist with the iconic Impact TrueType font.  To account for this, lolologist will use your system's Impact if it exists, or fall back to an open font.
+
+If Impact isn't installed on your system, [download and install it](http://www.cufonfonts.com/en/font/12047/impact), and then run either `lolologist setfont` or `lolologist setfont <path-to-font>` to load it.
+
+Configuration
+-------------
+The utility can be configured through the `.lolologistrc` file, usually found in your home directory. If the file doesn't exist, feel free to create it.  The following fields are accepted:
+
+| Field             | Description                                                                |
+| ----------------- | -------------------------------------------------------------------------- |
+| `Camera`          | The video device to use. (e.g. for Linux: /dev/video1, for OS X: "iSight") |
+| `FontPath`        | The full path to the Impact font's TTF file                                |
+| `Lolspeak`        | `on` if commit messages should be translated to lolspeak, `off` otherwise  |
+| `OutputDirectory` | The format string for the directory into which all images will be placed   |
+| `OutputFilename`  | The format string for the name of the generated file                       |
+| `OutputFormat`    | The type of image to generate (e.g. `jpg`)                                 |
+| `UploadImages`    | `on` if macros should be uploaded to the internet, `off` otherwise         |
+| `UploadUrl`       | The URL to post the generated image macro to                               |
+
+Pythonic format strings are accepted for the outpute file name, with the caveat that *percent signs have to be escaped with another percent sign*.
 
 For example, if you wanted to group images by the commit year and month, you could use the following:
 
@@ -56,7 +79,7 @@ For example, if you wanted to group images by the commit year and month, you cou
 OutputDirectory = ~/.lolologist/{project}/{time:%%Y}/{time:%%m}
 ```
 
-Possible substition parameters:
+Possible format parameters:
 
 | Parameter  | Type       | Description                                |
 | ---------- | :--------: | ------------------------------------------ |
@@ -65,13 +88,8 @@ Possible substition parameters:
 | `message`  | *string*   | The entire commit message.                 |
 | `time`     | *datetime* | The time of the commit.                    |
 
-Fonts
------
-Due to licensing concerns, I can't distribute lolologist with the iconic Impact TrueType font.  To account for this, lolologist will use your system's Impact if it exists, or fall back to an open font.
-
-If Impact isn't installed on your system, [download and install it](http://www.cufonfonts.com/en/font/12047/impact), and then run either `lolologist setfont` or `lolologist setfont <path-to-font>` to load it.
-
 =======
+
 Acknowledgements
 ----------------
 Thanks go out to Stephen Newey for his [PyLOLz module](https://code.google.com/p/pylolz/).
