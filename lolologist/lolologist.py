@@ -247,7 +247,7 @@ class Lolologist(object):
         if is_osx():
             camera = ImageSnapCamera(device=self.config.get_camera())
         else:
-            camera = MplayerCamera()
+            camera = MplayerCamera(device=self.config.get_camera())
         with camera.capture_photo() as photo:
             macro = ImageMacro(photo, revision, summary, self.config.get_font())
             image = macro.render()

@@ -66,19 +66,22 @@ class Camera(object):
 
 class MplayerCamera(Camera): #pylint: disable=R0903
     """ A picture source """
-    def __init__(self, warmup_time=7):
+    def __init__(self, warmup_time=7, **kwargs):
         """ Initializes a new webcam instance
 
         :param warmup_time: The number of frames to capture before capturing one for realsies
 
         """
-        super(MplayerCamera, self).__init__(warmup_time)
+        super(MplayerCamera, self).__init__(warmup_time, **kwargs)
 
     def _capture(self):
         """ Captures a photo and provides it for further processing. """
-        call(['mplayer', 'tv://', '-vo', 'jpeg:outdir={}'.format(self._output_directory), '-frames',
-              str(self._warmup_time)], stdout=DEVNULL, stderr=STDOUT)
-        #get the last captured frame
+        params = ['mplayer', 'tv://', '-vo', 'jpeg:outdir={}'.format(self._output_directory), '-frames',
+              str(self._warmup_time)]
+        if self._device:
+            params.extend(['-tv', 'device={}'.format(self._device)])
+        call(params, stdout=DEVNULL, stderr=STDOUT)
+        # get the last captured frame
         return os.path.join(self._output_directory, '{0:08d}.jpg'.format(self._warmup_time))
 
 
