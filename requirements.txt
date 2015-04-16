@@ -1,0 +1,13 @@
+GitPython==0.3.2.RC1
+Pillow==2.4.0
+argparse==1.2.1
+astroid==1.1.1
+async==0.6.1
+configparser==3.3.0r2
+gitdb==0.5.4
+logilab-common==0.61.0
+lolologist==0.3.1
+pylint==1.2.1
+requests==2.3.0
+smmap==0.8.2
+wsgiref==0.1.2
