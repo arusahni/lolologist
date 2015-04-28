@@ -24,6 +24,29 @@ class TestBaseCamera(object):
         c = Camera(1)
         assert c._device == None
 
-    def test_setup(self):
+    def test_capture(self):
         c = Camera(1)
+        with pytest.raises(NotImplementedError):
+            c._capture()
+
+    @mock.patch("os.makedirs")
+    def test_setup(self, makedirs_function):
+        assert not makedirs_function.called
+        c = Camera(1)
+        c._setup()
+        assert makedirs_function.called
+        assert makedirs_function.call_args_list[0][0][0] == c._output_directory
+
+    @mock.patch("lolologist.cameras.rmtree")
+    @mock.patch("os.path.exists")
+    def test_cleanup(self, pathexists_function, rmtree_function):
+        assert not pathexists_function.called
+        assert not rmtree_function.called
+        c = Camera(1)
+        c._cleanup()
+        assert pathexists_function.called
+        assert rmtree_function.called
+        assert pathexists_function.call_args_list[0][0][0] == c._output_directory
+        assert pathexists_function.call_args_list[0][0][0] == c._output_directory
+
 
