@@ -1,12 +1,15 @@
+import sys
+
 import pytest
 import mock
 
-from collections import namedtuple
 from lolologist.utils import upload, LolologistError
 
 TEST_URL = "http://test/url"
 TEST_PATH = "/test/path.jpg"
 TEST_PATH_BASENAME = "path.jpg"
+
+BUILTIN_OPEN = "__builtin__.open" if sys.version_info < (3,) else "builtins.open"
 
 class MockResponse(object):
     def __init__(self, status_code=200, text=""):
@@ -18,7 +21,7 @@ class MockResponse(object):
 
 @mock.patch("requests.post")
 @mock.patch("os.path.basename")
-@mock.patch("__builtin__.open")
+@mock.patch(BUILTIN_OPEN)
 def test_upload_image_open(open_function, basename_function, post_function):
     with pytest.raises(LolologistError) as err:
         upload(TEST_URL, TEST_PATH)
@@ -28,7 +31,7 @@ def test_upload_image_open(open_function, basename_function, post_function):
 
 @mock.patch("requests.post")
 @mock.patch("os.path.basename")
-@mock.patch("__builtin__.open")
+@mock.patch(BUILTIN_OPEN)
 def test_upload_basename(open_function, basename_function, post_function):
     with pytest.raises(LolologistError) as err:
         upload(TEST_URL, TEST_PATH)
@@ -37,7 +40,7 @@ def test_upload_basename(open_function, basename_function, post_function):
 
 @mock.patch("requests.post")
 @mock.patch("os.path.basename")
-@mock.patch("__builtin__.open", return_value="opened image")
+@mock.patch(BUILTIN_OPEN, return_value="opened image")
 def test_upload_post_payload(open_function, basename_function, post_function):
     with pytest.raises(LolologistError) as err:
         upload(TEST_URL, TEST_PATH)
@@ -50,7 +53,7 @@ def test_upload_post_payload(open_function, basename_function, post_function):
 
 @mock.patch("requests.post")
 @mock.patch("os.path.basename")
-@mock.patch("__builtin__.open", return_value="opened image")
+@mock.patch(BUILTIN_OPEN, return_value="opened image")
 def test_upload_post_url(open_function, basename_function, post_function):
     with pytest.raises(LolologistError) as err:
         upload(TEST_URL, TEST_PATH)
@@ -59,21 +62,21 @@ def test_upload_post_url(open_function, basename_function, post_function):
 
 @mock.patch("requests.post", return_value=MockResponse(status_code=200))
 @mock.patch("os.path.basename")
-@mock.patch("__builtin__.open", return_value="opened image")
+@mock.patch(BUILTIN_OPEN, return_value="opened image")
 def test_upload_success(open_function, basename_function, post_function):
     upload(TEST_URL, TEST_PATH)
     assert post_function.called
 
 @mock.patch("requests.post", return_value=MockResponse(status_code=200))
 @mock.patch("os.path.basename")
-@mock.patch("__builtin__.open", return_value="opened image")
+@mock.patch(BUILTIN_OPEN, return_value="opened image")
 def test_upload_success_payload(open_function, basename_function, post_function):
     image_url = upload(TEST_URL, TEST_PATH)
     assert post_function.return_value.json()["data"]["img_url"] == image_url
 
 @mock.patch("requests.post", return_value=MockResponse(status_code=500))
 @mock.patch("os.path.basename")
-@mock.patch("__builtin__.open", return_value="opened image")
+@mock.patch(BUILTIN_OPEN, return_value="opened image")
 def test_upload_failure_status(open_function, basename_function, post_function):
     with pytest.raises(LolologistError) as err:
         upload(TEST_URL, TEST_PATH)
