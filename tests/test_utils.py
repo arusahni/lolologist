@@ -42,7 +42,6 @@ def test_upload_post_payload(open_function, basename_function, post_function):
     with pytest.raises(LolologistError) as err:
         upload(TEST_URL, TEST_PATH)
         _, kwargs = post_function.call_args_list[0]
-        print kwargs
         assert 'files' in kwargs
         assert 'file' in kwargs['files']
         assert kwargs['files']['file'][0] == TEST_PATH_BASENAME
@@ -55,7 +54,6 @@ def test_upload_post_payload(open_function, basename_function, post_function):
 def test_upload_post_url(open_function, basename_function, post_function):
     with pytest.raises(LolologistError) as err:
         upload(TEST_URL, TEST_PATH)
-        print kwargs
         assert post_function.call_args_list[0][0][0] == TEST_URL
         assert "Couldn't upload the file" in err.message
 
