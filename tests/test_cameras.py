@@ -1,7 +1,7 @@
 import pytest
 import mock
 
-from lolologist.cameras import Camera, MplayerCamera, ImageSnapCamera
+from lolologist.cameras import Camera
 
 class TestBaseCamera(object):
     """Tests the base camera object functionality"""
