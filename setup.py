@@ -9,7 +9,7 @@ REQUIREMENTS = [
         ]
 
 if sys.version_info <= (3,):
-    REQUIREMENTS.append('configparser')
+    REQUIREMENTS.append('configparser==3.5.0b2') # Using the beta for PyPy compatibility
 
 setup(name='lolologist',
       version='0.4.0',
