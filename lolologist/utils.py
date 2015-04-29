@@ -13,7 +13,10 @@ lolologist utils - helper module for lolologist
 """
 
 from __future__ import unicode_literals, print_function
-from builtins import super
+import sys
+
+if sys.version_info >= (3,):
+    from builtins import super
 
 import os.path
 import requests
@@ -26,7 +29,7 @@ class LolologistError(Exception):
         :param message: The error message
 
         """
-        super().__init__(message)
+        super(LolologistError, self).__init__(message)
 
 def upload(url, path):
     """ POSTs the file at the given path to the specified endpoint. """
