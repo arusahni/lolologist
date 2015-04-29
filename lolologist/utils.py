@@ -13,12 +13,20 @@ lolologist utils - helper module for lolologist
 """
 
 from __future__ import unicode_literals, print_function
+from builtins import super
+
 import os.path
 import requests
 
 class LolologistError(Exception):
     """ Custom error type """
-    pass
+    def __init__(self, message):
+        """Creates a custom error
+
+        :param message: The error message
+
+        """
+        super().__init__(message)
 
 def upload(url, path):
     """ POSTs the file at the given path to the specified endpoint. """
