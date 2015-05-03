@@ -26,11 +26,6 @@ from .cameras import MplayerCamera, ImageSnapCamera
 from .utils import LolologistError, upload
 from .repository import GitRepository
 
-try:
-    from subprocess import DEVNULL
-except ImportError:
-    DEVNULL = open(os.devnull, 'wb')
-
 LOG = logging.getLogger("lolologist")
 
 # Maximum width and height of the rendered image (in pixels). These MUST be floats.
