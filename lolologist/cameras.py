@@ -3,9 +3,9 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 # pylint: disable=I0011
 
-"""Camera interfaces for lolologist.
-
-    Aru Sahni <arusahni@gmail.com>
+"""
+Camera interfaces for lolologist.
+Aru Sahni <arusahni@gmail.com>
 """
 
 from __future__ import unicode_literals
@@ -24,15 +24,17 @@ except ImportError:
 class Camera(object):
     """A base camera object"""
 
-    def __init__(self, warmup_time, directory='/tmp/lolologist/'):
+    def __init__(self, warmup_time, directory='/tmp/lolologist/', device=None):
         """A base implementation of the webcam, not directly callable
 
-        :param warmup_time: The amount of time the camera should be permitted to warm up before shooting
-        :param directory: The directory to output captured images to
+        :param warmup_time: How long to wait until the image gets captured
+        :param directory: The temp directory to write to
+        :param device: The camera device to use
 
         """
         self._warmup_time = warmup_time
         self._output_directory = directory
+        self._device = device
 
     @contextmanager
     def capture_photo(self):
@@ -64,32 +66,35 @@ class Camera(object):
 
 class MplayerCamera(Camera): #pylint: disable=R0903
     """ A picture source """
-    def __init__(self, warmup_time=7):
+    def __init__(self, warmup_time=7, **kwargs):
         """ Initializes a new webcam instance
 
         :param warmup_time: The number of frames to capture before capturing one for realsies
 
         """
-        super(MplayerCamera, self).__init__(warmup_time)
+        super(MplayerCamera, self).__init__(warmup_time, **kwargs)
 
     def _capture(self):
         """ Captures a photo and provides it for further processing. """
-        call(['mplayer', 'tv://', '-vo', 'jpeg:outdir={}'.format(self._output_directory), '-frames',
-              str(self._warmup_time)], stdout=DEVNULL, stderr=STDOUT)
-        #get the last captured frame
+        params = ['mplayer', 'tv://', '-vo', 'jpeg:outdir={}'.format(self._output_directory), '-frames',
+              str(self._warmup_time)]
+        if self._device:
+            params.extend(['-tv', 'device={}'.format(self._device)])
+        call(params, stdout=DEVNULL, stderr=STDOUT)
+        # get the last captured frame
         return os.path.join(self._output_directory, '{0:08d}.jpg'.format(self._warmup_time))
 
 
 class ImageSnapCamera(Camera):
     """Uses imagesnap to capture a photo"""
 
-    def __init__(self, warmup_time=1.2):
+    def __init__(self, warmup_time=1.2, **kwargs):
         """Initializes a new webcam instance
 
         :param warmup_time: The warmup time
 
         """
-        super(ImageSnapCamera, self).__init__(warmup_time)
+        super(ImageSnapCamera, self).__init__(warmup_time, **kwargs)
 
     def _capture(self):
         """Captures a photo using imagesnap and provides the path for further processing
@@ -98,6 +103,10 @@ class ImageSnapCamera(Camera):
 
         """
         outpath = os.path.join(self._output_directory, 'snapshot.jpg')
-        call(['imagesnap', '-w', str(self._warmup_time), '-q', outpath], stdout=DEVNULL, stderr=STDOUT)
+        params = ['imagesnap', '-w', str(self._warmup_time), '-q', outpath]
+        if self._device:
+            params.insert(-1, "-d")
+            params.insert(-1, self._device)
+        call(params, stdout=DEVNULL, stderr=STDOUT)
         return outpath
 

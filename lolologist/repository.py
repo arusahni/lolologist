@@ -16,7 +16,7 @@ import os
 import os.path
 import stat
 
-from utils import LolologistError
+from .utils import LolologistError
 
 class GitRepository(object):
     """ A git repository """
@@ -26,13 +26,24 @@ class GitRepository(object):
             self.repo = git.Repo(repository)
         except git.InvalidGitRepositoryError:
             raise LolologistError("The path '{}' must contain a valid git repository.".format(repository))
+        except git.NoSuchPathError:
+            raise LolologistError("The path '{}' is invalid.".format(repository))
 
-    def __add_hook(self, base_dir_path, hook_text):
-        """ Adds the githook to a git module. """
+    def __get_hooks_dir(self, base_dir_path):
+        """ Gets the path to the hooks directory, creating it if it doesn't exist
+
+        :param base_dir_path: The full path to the repo's base directory
+        :returns: The full path to the githook directory.
+
+        """
         hooks_dir = os.path.join(base_dir_path, 'hooks')
         if not os.path.isdir(hooks_dir):
             os.makedirs(hooks_dir)
+        return hooks_dir
 
+    def _add_hook(self, base_dir_path, hook_text):
+        """ Adds the githook to a git module. """
+        hooks_dir = self.__get_hooks_dir(base_dir_path)
         hook_file = os.path.join(hooks_dir, 'post-commit')
         if os.path.isfile(hook_file): #TODO: Handle multiple post-commit events in the future
             raise LolologistError("There is already a post-commit hook registered for this repository.")
@@ -47,14 +58,15 @@ class GitRepository(object):
     def register(self, hook_text):
         """ Registers the githooks """
         print("Adding hook to main repository.")
-        self.__add_hook(self.repo.git_dir, hook_text)
+        self._add_hook(self.repo.git_dir, hook_text)
 
-        modules_dir = os.path.join(self.repo.git_dir, 'modules')
-        if os.path.isdir(modules_dir):
-            for submodule in self.repo.submodules:
-                print("Adding hook to subrepository: ", submodule.path)
-                self.__add_hook(os.path.join(modules_dir, submodule.path), hook_text)
-            
+        # The below code won't work until gitpython fixes their submodule support
+        # modules_dir = os.path.join(self.repo.git_dir, 'modules')
+        # if os.path.isdir(modules_dir):
+        #     for submodule in self.repo.submodules:
+        #         print("Adding hook to subrepository: ", submodule.path)
+        #         self.__add_hook(os.path.join(modules_dir, submodule.path), hook_text)
+        #
         return True
 
 

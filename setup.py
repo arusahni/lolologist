@@ -1,4 +1,15 @@
 from setuptools import setup
+import sys
+
+REQUIREMENTS = [
+        'argparse',
+        'GitPython>=0.3.2.RC1',
+        'Pillow>=2.3.0',
+        'requests',
+        ]
+
+if sys.version_info <= (3,):
+    REQUIREMENTS.append('configparser==3.5.0b2') # Using the beta for PyPy compatibility
 
 setup(name='lolologist',
       version='0.4.0',
@@ -22,13 +33,7 @@ setup(name='lolologist',
       packages=['lolologist'],
       package_data={'lolologist':['LeagueGothic-Regular.otf', 'tranzlator.json']},
       include_package_data=True,
-      install_requires=[
-          'argparse',
-          'GitPython>=0.3.2.RC1',
-          'Pillow>=2.3.0',
-          'requests',
-          'configparser',
-      ],
+      install_requires=REQUIREMENTS,
       entry_points = {
           'console_scripts': ['lolologist=lolologist.lolologist:main'],
       },

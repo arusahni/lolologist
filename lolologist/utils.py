@@ -13,12 +13,23 @@ lolologist utils - helper module for lolologist
 """
 
 from __future__ import unicode_literals, print_function
+import sys
+
+if sys.version_info >= (3,):
+    from builtins import super
+
 import os.path
 import requests
 
 class LolologistError(Exception):
     """ Custom error type """
-    pass
+    def __init__(self, message):
+        """Creates a custom error
+
+        :param message: The error message
+
+        """
+        super(LolologistError, self).__init__(message)
 
 def upload(url, path):
     """ POSTs the file at the given path to the specified endpoint. """
@@ -28,15 +39,15 @@ def upload(url, path):
         if req.status_code != 200:
             raise LolologistError("Couldn't upload the file: {} - {}".format(req.status_code, req.text))
         return req.json().get("data").get("img_url")
-    except IOError, e:
-        raise LolologistError("Couldn't open the file '{}': {}".format(path, str(e)))
-    except requests.exceptions.ConnectionError, e:
+    except requests.exceptions.ConnectionError as e:
         raise LolologistError("Couldn't connect to the host. {}".format(str(e)))
-    except requests.exceptions.HTTPError, e:
+    except requests.exceptions.HTTPError as e:
         raise LolologistError("There was an HTTP error. {}".format(str(e)))
     except requests.exceptions.URLRequired:
         raise LolologistError("The URL '{}' is invalid.".format(url))
-    except requests.exceptions.TooManyRedirects, e:
+    except requests.exceptions.TooManyRedirects as e:
         raise LolologistError("Too many redirects. {}".format(str(e)))
     except AttributeError:
         raise LolologistError("The response data is incorrectly formed.")
+    except IOError as e:
+        raise LolologistError("Couldn't open the file '{}': {}".format(path, str(e)))

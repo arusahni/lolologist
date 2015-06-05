@@ -19,16 +19,12 @@ import configparser
 import argparse, os, textwrap, sys, logging
 from PIL import Image, ImageFont, ImageDraw
 from subprocess import check_output, STDOUT
-from lolz import Tranzlator
 
-from cameras import MplayerCamera, ImageSnapCamera
-from utils import LolologistError, upload
-from repository import GitRepository
+from .lolz import Tranzlator
 
-try:
-    from subprocess import DEVNULL
-except ImportError:
-    DEVNULL = open(os.devnull, 'wb')
+from .cameras import MplayerCamera, ImageSnapCamera
+from .utils import LolologistError, upload
+from .repository import GitRepository
 
 LOG = logging.getLogger("lolologist")
 
@@ -179,6 +175,13 @@ class Config(object): #pylint: disable=R0903
             LOG.warning("No font found. Using fallback. Run `lolologist setfont --help` for more information.")
         return font
 
+    def get_camera(self):
+        """Gets the configuration entry for the active camera device
+
+        :returns: The configured camera. `None` if one isn't configured
+
+        """
+        return self.__parser.get("Camera")
 
     @property
     def lol_speak(self):
@@ -237,9 +240,9 @@ class Lolologist(object):
 
         """
         if is_osx():
-            camera = ImageSnapCamera()
+            camera = ImageSnapCamera(device=self.config.get_camera())
         else:
-            camera = MplayerCamera()
+            camera = MplayerCamera(device=self.config.get_camera())
         with camera.capture_photo() as photo:
             macro = ImageMacro(photo, revision, summary, self.config.get_font())
             image = macro.render()
