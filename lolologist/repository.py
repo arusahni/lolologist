@@ -84,7 +84,7 @@ class GitRepository(object):
         """ Gets the latest commit in the repository, with an optional formatter for free text areas. """
         if not translator:
             translator = lambda x: x
-        head_ref = self.repo.head.reference.commit
+        head_ref = self.repo.head.commit
         return {
             "project" : os.path.basename(self.repo.working_dir),
             "revision" : head_ref.hexsha[0:10],
