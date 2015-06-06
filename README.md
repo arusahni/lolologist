@@ -1,7 +1,7 @@
 lolologist
 ==========
 
-A python-based tool that generates an image macro from your webcam whenever you commit to a git repository. Inspired by [lolcommits](https://github.com/mroth/lolcommits).
+A python-based tool that automatically generates an image macro from your webcam whenever you commit to a git repository. Inspired by [lolcommits](https://github.com/mroth/lolcommits).
 
 Installing
 ------------
@@ -60,16 +60,16 @@ Configuration
 -------------
 The utility can be configured through the `.lolologistrc` file, usually found in your home directory. If the file doesn't exist, feel free to create it.  The following fields are accepted:
 
-| Field             | Description                                                                |
-| ----------------- | -------------------------------------------------------------------------- |
-| `Camera`          | The video device to use. (e.g. for Linux: /dev/video1, for OS X: "iSight") |
-| `FontPath`        | The full path to the Impact font's TTF file                                |
-| `Lolspeak`        | `on` if commit messages should be translated to lolspeak, `off` otherwise  |
-| `OutputDirectory` | The format string for the directory into which all images will be placed   |
-| `OutputFilename`  | The format string for the name of the generated file                       |
-| `OutputFormat`    | The type of image to generate (e.g. `jpg`)                                 |
-| `UploadImages`    | `on` if macros should be uploaded to the internet, `off` otherwise         |
-| `UploadUrl`       | The URL to post the generated image macro to                               |
+| Field             | Description                                                                  |
+| ----------------- | --------------------------------------------------------------------------   |
+| `Camera`          | The video device to use. (e.g. for Linux: `/dev/video1`, for OS X: `iSight`) |
+| `FontPath`        | The full path to the Impact font's TTF file                                  |
+| `Lolspeak`        | `on` if commit messages should be translated to lolspeak, `off` otherwise    |
+| `OutputDirectory` | The format string for the directory into which all images will be placed     |
+| `OutputFilename`  | The format string for the name of the generated file                         |
+| `OutputFormat`    | The type of image to generate (e.g. `jpg`)                                   |
+| `UploadImages`    | `on` if macros should be uploaded to the internet, `off` otherwise           |
+| `UploadUrl`       | The URL to post the generated image macro to                                 |
 
 Pythonic format strings are accepted for the outpute file name, with the caveat that *percent signs have to be escaped with another percent sign*.
 
