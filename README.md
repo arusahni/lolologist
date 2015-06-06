@@ -1,5 +1,6 @@
 lolologist
 ==========
+[![Build Status](https://travis-ci.org/arusahni/lolologist.svg?branch=dev)](https://travis-ci.org/arusahni/lolologist)
 
 A python-based tool that automatically generates an image macro from your webcam whenever you commit to a git repository. Inspired by [lolcommits](https://github.com/mroth/lolcommits).
 
