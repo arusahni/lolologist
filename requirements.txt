@@ -11,3 +11,4 @@ pylint==1.2.1
 requests==2.3.0
 smmap==0.8.2
 wsgiref==0.1.2
+pypandoc==0.9.7
