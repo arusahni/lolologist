@@ -4,14 +4,17 @@ from __future__ import print_function
 
 from setuptools import setup
 import sys
+import os
 
-try:
-    import pypandoc
-    LONG_DESCRIPTION = pypandoc.convert('README.md', 'rst')
-    print("Converted README.md to rst")
-except (IOError, ImportError):
-    print("Could not convert README.md to rst. Falling back to Markdown", file=sys.stderr)
-    LONG_DESCRIPTION = open('README.md').read()
+LONG_DESCRIPTION = ""
+if os.path.isfile('README.md'):
+    try:
+        import pypandoc
+        LONG_DESCRIPTION = pypandoc.convert('README.md', 'rst')
+        print("Converted README.md to rst")
+    except (IOError, ImportError):
+        print("Could not convert README.md to rst. Falling back to Markdown", file=sys.stderr)
+        LONG_DESCRIPTION = open('README.md').read()
 
 REQUIREMENTS = [
     'argparse',
@@ -24,7 +27,7 @@ if sys.version_info <= (3,):
     REQUIREMENTS.append('configparser==3.5.0b2') # Using the beta for PyPy compatibility
 
 setup(name='lolologist',
-      version='0.5.1',
+      version='0.5.2',
       description=('A utility that automatically generates an image macro from your webcam whenever '
                    'you commit to a git repository.'),
       long_description=LONG_DESCRIPTION,
@@ -45,7 +48,7 @@ setup(name='lolologist',
       ],
       keywords=['git', 'camera', 'webcam', 'commit', 'macro', 'image', 'lol', 'lulz', 'version', 'control'],
       url='https://github.com/arusahni/lolologist',
-      download_url='https://github.com/arusahni/lolologist/tarball/v0.5.1',
+      download_url='https://github.com/arusahni/lolologist/tarball/v0.5.2',
       author='Aru Sahni',
       author_email='arusahni@gmail.com',
       license='MPL 2.0',
