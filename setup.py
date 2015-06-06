@@ -27,7 +27,7 @@ if sys.version_info <= (3,):
     REQUIREMENTS.append('configparser==3.5.0b2') # Using the beta for PyPy compatibility
 
 setup(name='lolologist',
-      version='0.5.2',
+      version='0.5.3',
       description=('A utility that automatically generates an image macro from your webcam whenever '
                    'you commit to a git repository.'),
       long_description=LONG_DESCRIPTION,
@@ -48,7 +48,7 @@ setup(name='lolologist',
       ],
       keywords=['git', 'camera', 'webcam', 'commit', 'macro', 'image', 'lol', 'lulz', 'version', 'control'],
       url='https://github.com/arusahni/lolologist',
-      download_url='https://github.com/arusahni/lolologist/tarball/v0.5.2',
+      download_url='https://github.com/arusahni/lolologist/tarball/v0.5.3',
       author='Aru Sahni',
       author_email='arusahni@gmail.com',
       license='MPL 2.0',
