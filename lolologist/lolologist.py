@@ -18,7 +18,7 @@ from __future__ import unicode_literals, print_function
 import configparser
 import argparse, os, textwrap, sys, logging
 from PIL import Image, ImageFont, ImageDraw
-from subprocess import check_output, STDOUT
+from subprocess import CalledProcessError, check_output, STDOUT
 
 from .lolz import Tranzlator
 
@@ -328,14 +328,19 @@ def get_impact():
     :returns: The full path to the Impact font
 
     """
-    locs = get_impact_locations()
     font_path = None
-    for loc in locs.splitlines():
-        if loc.startswith("/usr") or loc.startswith('/Library'): #most likely a permanent font
-            font_path = loc
-            break
-        elif font_path is None:
-            font_path = loc
+    try:
+        locs = get_impact_locations()
+        for loc in locs.splitlines():
+            if isinstance(loc, bytes):
+                loc = loc.decode("utf-8")
+            if loc.startswith("/usr") or loc.startswith("/Library"): #most likely a permanent font
+                font_path = loc
+                break
+            elif font_path is None:
+                font_path = loc
+    except CalledProcessError:
+        pass
     return font_path
 
 def parse_args(app):

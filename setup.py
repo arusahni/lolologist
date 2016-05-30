@@ -24,7 +24,7 @@ REQUIREMENTS = [
     ]
 
 if sys.version_info <= (3,):
-    REQUIREMENTS.append('configparser==3.5.0b2') # Using the beta for PyPy compatibility
+    REQUIREMENTS.append('configparser==3.5.0') # Using the beta for PyPy compatibility
 
 setup(name='lolologist',
       version='0.5.3',
@@ -56,6 +56,9 @@ setup(name='lolologist',
       package_data={'lolologist':['LeagueGothic-Regular.otf', 'tranzlator.json']},
       include_package_data=True,
       install_requires=REQUIREMENTS,
+      extras_require={
+          'test': ['mock', 'nose', 'coverage', 'pylint']
+      },
       entry_points={
           'console_scripts': ['lolologist=lolologist.lolologist:main'],
       },

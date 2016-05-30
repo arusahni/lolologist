@@ -15,6 +15,7 @@ Installing
 * libfreetype6-dev
 * libjpeg-dev
 * mplayer
+* pandoc (if doing local development)
 
 If pillow is already installed and you do not have the packages above, you need to uninstall it and install those packages. This is because when pillow is installed, it compiles optional features based on the availability of those packages. You would do this with commands:
 
