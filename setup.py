@@ -57,7 +57,7 @@ setup(name='lolologist',
       include_package_data=True,
       install_requires=REQUIREMENTS,
       extras_require={
-          'test': ['mock', 'nose', 'coverage', 'pylint']
+          'test': ['mock', 'nose', 'coverage', 'pylint', 'pypandoc']
       },
       entry_points={
           'console_scripts': ['lolologist=lolologist.lolologist:main'],
