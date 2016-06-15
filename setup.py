@@ -27,7 +27,7 @@ if sys.version_info <= (3,):
     REQUIREMENTS.append('configparser==3.5.0') # Using the beta for PyPy compatibility
 
 setup(name='lolologist',
-      version='0.5.3',
+      version='0.5.4',
       description=('A utility that automatically generates an image macro from your webcam whenever '
                    'you commit to a git repository.'),
       long_description=LONG_DESCRIPTION,

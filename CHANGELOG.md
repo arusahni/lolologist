@@ -1,6 +1,27 @@
 Releases
 ========
 
+v0.5.4 - 2016-06-14
+-------------------
+Dusting off the keyboard
+
+### Bugfixes
+
+* Python 3.5 support.
+* Some old packages were misbehaving. Updated dependencies.
+
+v0.5.3 - 2015-06-06
+-------------------
+Hi, PyPi!
+
+### Enhancements
+
+* Python 3 compatibility. (#20)
+* PyPy compatibility.
+* Support for multiple cameras. (#23)
+* Full OS X support. (#18)
+
+
 v0.4.0 - 2014-06-01
 -------------------
 Oh hi, I didn't see you there.
