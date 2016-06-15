@@ -18,7 +18,7 @@ if os.path.isfile('README.md'):
 
 REQUIREMENTS = [
     'argparse',
-    'GitPython>=0.3.2.RC1',
+    'GitPython>=0.3.2',
     'Pillow>=2.3.0',
     'requests',
     ]
