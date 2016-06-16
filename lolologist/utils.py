@@ -29,7 +29,10 @@ class LolologistError(Exception):
         :param message: The error message
 
         """
-        super(LolologistError, self).__init__(message)
+        self.message = message
+
+    def __str__(self):
+        return repr(self.message)
 
 def upload(url, path):
     """ POSTs the file at the given path to the specified endpoint. """
