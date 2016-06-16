@@ -9,6 +9,7 @@ Dusting off the keyboard
 
 * Python 3.5 support.
 * Some old packages were misbehaving. Updated dependencies.
+* Fixed issues where printing errors raised errors of their own.
 
 v0.5.3 - 2015-06-06
 -------------------
