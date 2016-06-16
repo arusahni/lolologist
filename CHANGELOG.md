@@ -1,6 +1,14 @@
 Releases
 ========
 
+v0.5.5 0 2016-06-15
+-------------------
+Back at it again
+
+### Bugfixes
+
+* Lock Pillow dependency due to a weird C bug.
+
 v0.5.4 - 2016-06-14
 -------------------
 Dusting off the keyboard
